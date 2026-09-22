@@ -315,6 +315,7 @@
         li.textContent = s;
         ol.appendChild(li);
       });
+      if (!rb.open) expectedToggle = true;   // render queues an async open-toggle
       rb.hidden = false; rb.open = true;
     } else {
       rb.hidden = true;
@@ -354,6 +355,22 @@
     $('#just-text').value = '';
     confSet = false; trustSet = false;
   }
+
+  /* ---------- rationale collapse/expand ---------------------
+   * <details> toggle events are dispatched asynchronously, so the one queued
+   * by renderTrial's `rb.open = true` arrives after rendering finishes. Track
+   * the open value render expects and swallow exactly that event; every other
+   * toggle is a real user action. */
+  let expectedToggle = null;
+  $('#rationale-block').addEventListener('toggle', e => {
+    if (expectedToggle !== null && e.target.open === expectedToggle) {
+      expectedToggle = null;
+      return;
+    }
+    expectedToggle = null;
+    if (!cur || cur.ended || e.target.hidden) return;
+    logEvent('rationale_toggle', { payload: { open: e.target.open, latency_ms: Math.round(now() - cur.t0) } });
+  });
 
   /* ---------- citation chips + source drawer ---------- */
   function onChip(i) {

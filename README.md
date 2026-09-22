@@ -125,6 +125,7 @@ One append-only array; every record:
 | `device_check` | payload: `pass`, viewport, `maxTouchPoints`, `pointer_fine`, UA |
 | `trial_start` | payload: `trial_index`, `is_practice`, `ground_truth`, `rationale_variant`, `rationale_shown`, `certainty_marker`, `n_sources`, `claim_true` |
 | `rationale_rendered` | payload: `variant` (`correct`/`flawed`), `flaw_type` |
+| `rationale_toggle` | payload: `open` (bool), `latency_ms` — participant collapsed/expanded the reasoning block |
 | `citation_click` | target: source index; payload: `latency_ms` from `trial_start` |
 | `source_open` | target: source index |
 | `source_close` | target: source index; payload: `open_duration_ms` (raw), `focused_ms`, `reason` (`close-btn`/`overlay`/`escape`/`chip-toggle`/`switch`/`trial_end`) |
