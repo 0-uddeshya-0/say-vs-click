@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Research Assistant Evaluation</title>
+<meta name="description" content="Short study evaluating the answers of an AI research assistant.">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M12 2.5l2.5 6.3 6.8.6-5.2 4.5 1.6 6.6L12 16.9l-5.7 3.6 1.6-6.6-5.2-4.5 6.8-.6L12 2.5z" fill="#4f46e5"/>
+      </svg>
+      <span>Research Assistant&nbsp;·&nbsp;Evaluation</span>
+    </div>
+    <div class="progress-wrap">
+      <span id="progress-label">Welcome</span>
+      <div class="progress-track" aria-hidden="true"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+  <!-- ============ 1. CONSENT ============ -->
+  <section class="screen" id="s-consent">
+    <div class="card wide">
+      <h1>Information and consent</h1>
+      <p>You are invited to take part in a research study about how people evaluate answers produced by an AI research assistant.</p>
+      <ul class="bullets">
+        <li>You will complete <strong>seven short tasks</strong> (one practice, then six main trials). In each, a factual claim is shown together with the assistant's answer and its cited sources.</li>
+        <li>Your task is to judge whether the answer is <em>supported by the cited sources</em>, then rate your confidence and trust.</li>
+        <li><strong>Please note:</strong> some answers, reasoning steps, or sources may contain inaccuracies.</li>
+        <li>Your responses and interaction behaviour (e.g. which sources you open, timing, scrolling) are recorded for research purposes.</li>
+        <li>Data are pseudonymous — linked only to your Prolific ID — and used solely for academic research. We do not store your IP address.</li>
+        <li>Participation is voluntary. You may stop at any time by closing this page; partial data may be retained for analysis.</li>
+        <li>The session takes about <strong>10–15 minutes</strong>.</li>
+      </ul>
+      <label class="checkline" for="consent-check">
+        <input type="checkbox" id="consent-check">
+        <span>I have read the information above and I agree to take part in this study.</span>
+      </label>
+      <div class="actions">
+        <button type="button" class="btn primary" id="consent-btn" disabled>Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 2. INSTRUCTIONS ============ -->
+  <section class="screen" id="s-instructions" hidden>
+    <div class="card wide">
+      <h1>Your task</h1>
+      <p>We are <strong>evaluating the quality of a new AI research assistant's answers</strong>. You will review a series of short factual claims, each paired with the assistant's answer.</p>
+      <ol class="steps">
+        <li><strong>Read the claim and the answer.</strong> Some answers also show the assistant's step-by-step reasoning.</li>
+        <li><strong>Check the sources if you wish.</strong> Answers cite numbered sources — click a chip like <span class="chip-demo">[1]</span> to open the source excerpt. You can open and close sources as often as you like.</li>
+        <li><strong>Give your verdict</strong> — is the answer supported by the cited sources? Then rate your confidence and how much you trust the answer.</li>
+      </ol>
+      <p>There is one practice trial first, then six main trials. Please work at a natural pace and base each verdict on the sources as you see them.</p>
+      <div class="actions">
+        <button type="button" class="btn primary" id="instr-btn">I understand — continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 3. DEVICE GATE ============ -->
+  <section class="screen" id="s-device" hidden>
+    <div class="card center">
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Checking your device…</h1>
+      <p class="muted">This study requires a laptop or desktop computer.</p>
+    </div>
+  </section>
+
+  <section class="screen" id="s-incompatible" hidden>
+    <div class="card">
+      <h1>Incompatible device</h1>
+      <p>This study requires a laptop or desktop computer: a screen at least <strong>1024&nbsp;px wide</strong> and a mouse or trackpad (no touch-only devices such as phones or tablets).</p>
+      <p>Please reopen this study on a compatible device. If you arrived via Prolific and cannot continue, you can return your submission with the code below.</p>
+      <div class="codebox"><span id="return-code">—</span></div>
+    </div>
+  </section>
+
+  <!-- ============ PRACTICE → MAIN INTERSTITIAL ============ -->
+  <section class="screen" id="s-practice-done" hidden>
+    <div class="card">
+      <h1>Practice complete</h1>
+      <p>That was the practice trial — its answers don't count. The next <strong>six trials</strong> are the real task. Everything works exactly the same way.</p>
+      <div class="actions">
+        <button type="button" class="btn primary" id="practice-done-btn">Begin the study</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 4–5. TRIAL ============ -->
+  <section class="screen" id="s-trial" hidden>
+    <div class="trial-col">
+
+      <div class="trial-kicker" id="trial-tag">Trial</div>
+
+      <div class="card claim-card">
+        <div class="card-label">Claim under review</div>
+        <p class="claim-text" id="claim-text"></p>
+      </div>
+
+      <div class="card answer-card">
+        <div class="card-label answer-label">
+          <span class="ai-badge" aria-hidden="true">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4L12 3z" fill="currentColor"/><path d="M18 14l.9 2.3 2.1.7-2.1.7L18 20l-.9-2.3-2.1-.7 2.1-.7L18 14z" fill="currentColor" opacity=".7"/></svg>
+            AI
+          </span>
+          Assistant's answer
+        </div>
+        <p class="answer-text" id="answer-text"></p>
+
+        <details class="rationale" id="rationale-block" open>
+          <summary>Reasoning <span class="summary-hint">— how the assistant reached this answer</span></summary>
+          <ol class="rationale-list" id="rationale-list"></ol>
+        </details>
+
+        <p class="certainty" id="certainty-line" hidden></p>
+
+        <div class="chips-row">
+          <div class="chips" id="citation-chips" role="group" aria-label="Cited sources"></div>
+          <span class="muted small" id="chips-note" hidden>This answer cites no sources.</span>
+        </div>
+      </div>
+
+      <div class="card verdict-card" id="verdict-card">
+        <div class="card-label">Your verdict — is the assistant's answer supported by the cited sources?</div>
+        <div class="verdict-btns" role="group" aria-label="Verdict options">
+          <button type="button" class="verdict-btn" data-verdict="supported">Supported by the sources</button>
+          <button type="button" class="verdict-btn" data-verdict="not_supported">Not supported by the sources</button>
+          <button type="button" class="verdict-btn" data-verdict="cannot_tell">Cannot tell</button>
+        </div>
+      </div>
+
+      <div class="card rate-card" id="confidence-card" hidden>
+        <label class="card-label" for="conf-range">How confident are you in your verdict?</label>
+        <div class="slider-row">
+          <span class="scale-end">1<br><em>Not at all</em></span>
+          <input type="range" id="conf-range" min="1" max="7" step="1" value="4" aria-label="Confidence from 1 to 7">
+          <span class="scale-end">7<br><em>Completely</em></span>
+          <output class="slider-val" id="conf-val" for="conf-range">–</output>
+        </div>
+        <p class="muted small">Move the slider to set your answer.</p>
+      </div>
+
+      <div class="card rate-card" id="trust-card" hidden>
+        <label class="card-label" for="trust-range">How much do you trust this answer?</label>
+        <div class="slider-row">
+          <span class="scale-end">1<br><em>Not at all</em></span>
+          <input type="range" id="trust-range" min="1" max="7" step="1" value="4" aria-label="Trust from 1 to 7">
+          <span class="scale-end">7<br><em>Completely</em></span>
+          <output class="slider-val" id="trust-val" for="trust-range">–</output>
+        </div>
+      </div>
+
+      <div class="card" id="just-card" hidden>
+        <label class="card-label" for="just-text">In one sentence — why did you give that verdict? <span class="muted">(optional)</span></label>
+        <input type="text" class="text-input" id="just-text" maxlength="280" placeholder="e.g. the second source directly confirmed it">
+      </div>
+
+      <div class="actions right">
+        <button type="button" class="btn primary lg" id="next-btn" hidden>Next</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ 6a. MID-TRIAL ATTENTION CHECK ============ -->
+  <section class="screen" id="s-attn" hidden>
+    <div class="card">
+      <div class="card-label">Quick check</div>
+      <p>To confirm you are reading each item carefully, please select <strong>“Not supported by the sources”</strong> below.</p>
+      <div class="verdict-btns" role="group" aria-label="Attention check options">
+        <button type="button" class="verdict-btn" data-choice="supported">Supported by the sources</button>
+        <button type="button" class="verdict-btn" data-choice="not_supported">Not supported by the sources</button>
+        <button type="button" class="verdict-btn" data-choice="cannot_tell">Cannot tell</button>
+      </div>
+      <p class="attn-hint" id="attn-hint" hidden>Please follow the instruction above to continue.</p>
+    </div>
+  </section>
+
+  <!-- ============ 7a. QUESTIONNAIRE I ============ -->
+  <section class="screen" id="s-survey1" hidden>
+    <div class="card wide">
+      <h1>A few questions about the assistant</h1>
+      <p class="muted">How much do you disagree or agree with each statement? (1&nbsp;=&nbsp;strongly disagree, 7&nbsp;=&nbsp;strongly agree)</p>
+      <div id="trust-items" class="likert-group"></div>
+      <div id="attn-item" class="likert-group"></div>
+      <h2>You and AI</h2>
+      <div id="lit-items" class="likert-group"></div>
+      <div id="habit-item" class="likert-group"></div>
+      <div class="actions">
+        <button type="button" class="btn primary" id="survey1-btn" disabled>Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 7b. QUESTIONNAIRE II ============ -->
+  <section class="screen" id="s-survey2" hidden>
+    <div class="card wide">
+      <h1>Almost done</h1>
+      <div id="fam-block">
+        <h2>Familiarity</h2>
+        <p class="muted">For each claim you saw — how familiar were you with it before today? (1&nbsp;=&nbsp;not at all familiar, 5&nbsp;=&nbsp;very familiar)</p>
+        <div id="fam-items" class="likert-group"></div>
+      </div>
+      <h2>About you</h2>
+      <div class="form-grid">
+        <div class="form-row">
+          <label for="age-input" id="age-label">Age</label>
+          <input type="number" class="text-input narrow" id="age-input" min="18" max="100" step="1" inputmode="numeric">
+        </div>
+        <div class="form-row">
+          <label for="gender-select" id="gender-label">Gender</label>
+          <select class="text-input narrow" id="gender-select">
+            <option value="">Select…</option>
+            <option value="woman">Woman</option>
+            <option value="man">Man</option>
+            <option value="nonbinary">Non-binary</option>
+            <option value="self">Prefer to self-describe</option>
+            <option value="na">Prefer not to say</option>
+          </select>
+          <input type="text" class="text-input narrow" id="gender-self" maxlength="60" placeholder="Please describe" hidden>
+        </div>
+      </div>
+      <div class="form-row">
+        <label for="funnel-text" id="funnel-label">What do you think this study was about?</label>
+        <textarea class="text-input" id="funnel-text" rows="3" maxlength="1000"></textarea>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn primary" id="survey2-btn" disabled>Continue</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 8. DEBRIEF ============ -->
+  <section class="screen" id="s-debrief" hidden>
+    <div class="card wide">
+      <h1>Thank you — a quick debrief</h1>
+      <p>This study measured whether people <strong>verify</strong> an AI assistant's answers against the cited sources, or take them at face value — and whether a displayed chain of reasoning or a confidence cue changes that.</p>
+      <p>Depending on random assignment, you saw answers with or without a reasoning section and with different certainty cues. Independently of that, <strong>two of the six trials contained a flawed reasoning step</strong>, and <strong>two cited sources that did not actually support the answer</strong>. For reference, here is what you saw:</p>
+      <div id="debrief-list" class="debrief-list"></div>
+      <p>Thank you for your time — your behaviour in this study helps research on over-reliance on AI systems.</p>
+      <div class="actions">
+        <button type="button" class="btn primary lg" id="finish-btn">Finish &amp; submit</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ 9. SUBMIT / COMPLETION ============ -->
+  <section class="screen" id="s-submit" hidden>
+    <div class="card center">
+      <div id="submit-running">
+        <div class="spinner" aria-hidden="true"></div>
+        <h1>Submitting your responses…</h1>
+        <p class="muted">Please keep this page open for a moment.</p>
+      </div>
+      <div id="submit-done" hidden>
+        <h1>You're done — thank you!</h1>
+        <p id="submit-msg"></p>
+        <div class="codebox"><span id="completion-code">—</span></div>
+        <div class="actions center-col">
+          <a class="btn primary lg" id="prolific-link" hidden>Return to Prolific</a>
+          <button type="button" class="btn" id="download-btn">Download my session data (JSON)</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ SOURCE DRAWER ============ -->
+<div id="drawer-overlay" hidden></div>
+<aside id="source-drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title" hidden>
+  <div class="drawer-head">
+    <span class="drawer-label" id="drawer-label">Source</span>
+    <button type="button" class="icon-btn" id="drawer-close" aria-label="Close source panel">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 3l10 10M13 3L3 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+  </div>
+  <h2 class="drawer-title" id="drawer-title"></h2>
+  <div class="drawer-scroll" id="drawer-scroll">
+    <p class="drawer-excerpt" id="drawer-excerpt"></p>
+    <p class="drawer-foot muted small">Excerpt reproduced as provided by the cited source.</p>
+  </div>
+</aside>
+
+<script src="config.js"></script>
+<script src="stimuli.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
