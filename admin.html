@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>Study admin</title>
+<link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<header><span>Study admin</span><span id="who"></span></header>
+<nav id="tabs" hidden>
+  <button data-tab="overview" class="on">Overview</button><button data-tab="responses">Responses</button>
+  <button data-tab="items">Questions and sources</button><button data-tab="help">Setup and help</button>
+</nav>
+<main id="admin"></main>
+<div id="reader" class="reader" hidden><div class="reader-box wide"><div class="reader-head"><div class="reader-title" id="pv-title">Preview</div><button class="btn" id="pv-close">Close</button></div><div class="reader-text" id="pv-body"></div></div></div>
+<script src="config.js"></script><script src="items.js"></script><script src="design.js"></script><script src="admin.js"></script>
+</body>
+</html>

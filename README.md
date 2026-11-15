@@ -1,189 +1,90 @@
 # say-vs-click
 
-A research instrument for a Master's-thesis study on **the say–do gap in source
-verification**: do people actually check the sources an AI assistant cites, or do
-they take the answer at face value? The app simulates a citation-backed AI
-question-answering interface and logs participants' *behavioural* verification
-(source opens, per-source dwell, scroll depth, focus-corrected reading time) —
-not self-reported habits.
+Study instrument for a master's thesis at Hochschule Neu-Ulm: does a displayed reasoning trace change
+whether people open the sources an AI assistant cites?
 
-## Design
-
-- **Between-subjects (2 × 3):** rationale presence (`shown` / `hidden`) ×
-  certainty framing (`none` / `certain` / `uncertain`) → 6 cells. Uniform random
-  assignment at session start; the assignment is persisted in `localStorage` so
-  a reload cannot re-randomise a participant.
-- **Within-subjects:** 1 practice trial (flagged `is_practice`, excluded from
-  analysis) + 6 main trials in a per-participant randomised order.
-- **Manipulated correctness:** for each participant exactly **2 of 6** trials
-  display the *flawed* rationale variant and exactly **2 of 6** display the
-  *non-entailing* source set (`sourcesUnsupported`). The two draws are
-  independent, so a trial may carry both manipulations.
-- Per trial: claim card → AI answer card (optional numbered reasoning steps,
-  optional certainty-marker line, `[1] [2] [3]` citation chips) → freely
-  open/close source panels → verdict (*supported / not supported / cannot tell*)
-  → confidence 1–7 → trust 1–7 → optional one-line justification on trials 3 & 5.
-- Two instructed-response **attention checks**: one between trials 3 and 4, one
-  embedded in the post-questionnaire ("select '2'").
-- Post-questionnaire: 6-item situational trust scale (7-pt), 5-item AI-literacy
-  scale (7-pt), habitual source-checking item (5-pt), optional per-trial
-  familiarity recap, demographics, funnel item, debrief.
-
-## Repository layout
+Participants judge 16 citation-backed AI answers (accept or reject). 8 answers come with a reasoning
+trace and 8 without (within participants, random order); 4 of the 16 answers are contradicted by their
+own sources. Opening sources is optional and every interaction is logged. Hosting and data storage are free.
 
 | File | Purpose |
 |---|---|
-| `index.html` | All screens: consent → instructions → device gate → trials → questionnaire → debrief → submit |
-| `styles.css` | Study UI (chat-adjacent cards, source drawer, Likert pills) |
-| `app.js` | Runtime: condition assignment, trial flow, event logging, submit/beacon |
-| `stimuli.js` | `STIMULI` (practice + 6 trials, each with correct/flawed rationale and supported/unsupported source sets) + `QUESTIONNAIRE` item text |
-| `config.js` | `ENDPOINT_URL`, Prolific completion URL/code, feature flags |
-| `apps-script.gs` | Google Apps Script `doPost` endpoint writing to a Sheet |
-| `.nojekyll` | Serve the folder as-is on GitHub Pages |
+| `index.html`, `app.js`, `styles.css` | The study: consent, instructions, practice, 16 trials, questionnaire, debriefing |
+| `admin.html`, `admin.js`, `admin.css` | Admin page: progress, responses and event logs, editor for questions and sources, open/close the study |
+| `items.js` | Bundled item set (16 items and a practice item). Used until an item set is saved from the admin page |
+| `design.js`, `test_design.js` | List rotation, trial order, item validation. `node test_design.js` checks the balance |
+| `config.js` | Data endpoint URL and contact line |
+| `apps-script.gs` | Data endpoint and admin backend (Google Apps Script bound to a Google Sheet) |
+| `analysis.R` | Models for H1 to H3, carryover check, say-versus-click comparison |
 
-## Run locally
+## How the parts fit together
 
-```bash
-cd Experiment          # this folder
-python3 -m http.server 8000
-# open http://localhost:8000/?preview=1
-```
+- **GitHub Pages** serves the pages. It can only serve files; it cannot store answers.
+- **A Google Sheet with a script** therefore stores the data. The script receives each finished session,
+  hands out the eight lists in rotation, keeps the live item set and answers the admin page.
+- **The admin key** protects the admin functions. It lives only in the script's properties, never in
+  this repository, because the repository is public.
 
-`?preview=1` forces preview mode. Any visit without `PROLIFIC_PID` in the query
-string is also treated as a preview: `meta.preview=true` and a uuid
-`session_id` is generated. Prolific links carry
-`?PROLIFIC_PID=…&STUDY_ID=…&SESSION_ID=…`.
+Without an endpoint the study runs in preview mode (data offered as a download) and the admin page
+works locally on the bundled items.
 
-To reset a local session (new assignment, empty log), clear site data /
-`localStorage` for the origin, or use a private window.
+## Data endpoint: one-time setup (about five minutes)
 
-## Data endpoint (Google Apps Script)
+1. Go to <https://sheets.new> while signed in to Google. Name the sheet, for example "say-vs-click data".
+   *Why:* this sheet becomes the database; only your Google account can open it.
+2. In the sheet: **Extensions > Apps Script**. Delete the sample code, paste all of `apps-script.gs`, save.
+3. Left bar: **Project Settings > Script Properties > Add script property**. Property `ADMIN_KEY`,
+   value a passphrase of at least 12 characters. *Why:* the admin page signs in with it.
+4. Back in the editor choose the function `selfTest` and press **Run**. Google asks for permission
+   once (Advanced > Go to project > Allow). *Why:* the script needs your consent to write to your sheet.
+   The log must show `submit: {"ok":true}` and `admin key set: true`.
+5. **Deploy > New deployment > Web app.** Execute as: **Me**. Who has access: **Anyone**. Deploy and copy
+   the web-app URL that ends in `/exec`. *Why "Anyone":* participants are not signed in to Google; the
+   script accepts only the requests it knows, and admin requests need the key.
+6. Put the URL into `ENDPOINT_URL` in `config.js` and your contact line into `CONTACT`, commit and push.
+7. Open the study once and finish it. The last page must say "Your responses have been saved", and the
+   session must appear in the admin page under *Responses*. Delete the test rows from the sheet afterwards.
 
-1. Create a Google Sheet, then **Extensions → Apps Script**.
-2. Paste the contents of `apps-script.gs` into `Code.gs`.
-   (If the script is not bound to the sheet, set `SPREADSHEET_ID`.)
-3. **Deploy → New deployment → Web app** — *Execute as*: **Me**,
-   *Who has access*: **Anyone**.
-4. Copy the `/exec` URL into `ENDPOINT_URL` in `config.js`.
+After changing `apps-script.gs` later: Deploy > Manage deployments > Edit > Version: New version.
+The URL stays the same.
 
-The script writes one row per submission to `sessions` (meta columns +
-`events_json`) and one row per event to `events`. `doGet` returns a small JSON
-status so the URL can be sanity-checked in a browser.
+## Hosting
 
-**Submit logic:** the app awaits the POST *before* showing the Prolific
-redirect, to avoid the redirect racing the data save. Apps Script web apps do
-not answer CORS preflights, so `app.js` tries `application/json`, then
-`text/plain` (a CORS-simple request), then an opaque `no-cors` POST as a last
-resort. If the endpoint is empty or all attempts fail, the UI offers a
-**Download my session data (JSON)** button plus a manual completion code —
-completion is never blocked on data save. A `sendBeacon` on `pagehide`
-additionally ships the partial log if the tab closes mid-study.
+The repository is served by GitHub Pages from the `main` branch (Settings > Pages).
+Study: `https://0-uddeshya-0.github.io/say-vs-click/` · Admin: `…/say-vs-click/admin.html`
 
-## Stimuli schema (`stimuli.js`)
+Add `?src=hnu`, `?src=surveycircle`, `?src=linkedin` and so on to the link posted in each place.
+The value is stored with the session, and the admin overview counts completions per channel.
+`?list=3&reset=1` forces list 3 and a fresh session (for testing).
 
-```js
-{
-  practice: { /* same shape, always shows correct rationale + supported sources */ },
-  trials: [{
-    id, claim, claimTrue,                 // claimTrue = real-world truth (analysis only)
-    answerText,
-    rationaleCorrect: [3–5 steps],
-    rationaleFlawed:  [3–5 steps],        // one invalid step; flawType documents it
-    flawType,
-    certaintyMarkers: { certain, uncertain },
-    sourcesSupported:   [{label, title, excerpt}],  // excerpts entail the answer
-    sourcesUnsupported: [{label, title, excerpt}]   // topically plausible, do NOT entail
-  }]
-}
-```
+## Admin page
 
-`groundTruth` is *not* authored per trial — it is derived from which source set
-the assignment draws: shown `sourcesUnsupported` ⇒ `ground_truth:
-"unsupported"`, otherwise `"supported"`. The effective value is logged on every
-`trial_start` and `verdict` event.
+- **Overview:** started, completed and partial sessions, completions per list and channel, open/close switch.
+  Outcomes by condition are hidden behind a button, because looking at them to decide when to stop
+  collecting would bias the tests.
+- **Responses:** every session; click one for its 16 trials and the full event log. CSV downloads.
+- **Questions and sources:** edit question, both answers, both traces and the three sources of each item;
+  preview; save. Saving stores a new version at the endpoint, and new participants receive it at once.
+  The editor refuses a set that would unbalance the design (16 items, four groups, two yes and two no each,
+  answers beginning with Yes or No). Every session records the item-set version it used.
 
-## Event schema
+## What is logged
 
-One append-only array; every record:
+Per trial (`trials`): item, trace shown, supported or not, decision, correct, whether any source was opened,
+number and order of sources, time sources were open and visible, scroll depth, decision changes, time to
+first choice, trial time, verification success. Per event (`events`): every source open and close, decision
+click, screen change, tab switch and window blur with a millisecond timestamp. Sessions that leave early
+are stored in `sessions` with `final = FALSE`. A reload resumes at the next question; a browser that has
+finished is not admitted a second time. No names, e-mail addresses or IP addresses are stored.
 
-```js
-{ seq, session_id, prolific_pid, study_id,
-  condition: { presence, certainty },
-  trial_id,                       // null outside trials
-  event_type,
-  t_perf,                         // performance.now(), ms since page load
-  t_wall,                         // ISO-8601
-  visibility,                     // document.visibilityState at log time
-  target, payload }
-```
+## Known limits
 
-| `event_type` | `target` / `payload` |
-|---|---|
-| `session_start` | payload: condition, order, flawed/unsupported sets, UA, viewport, `resumed`, `preview` |
-| `consent_given` | — |
-| `instructions_viewed` | payload: `dwell_ms` |
-| `device_check` | payload: `pass`, viewport, `maxTouchPoints`, `pointer_fine`, UA |
-| `trial_start` | payload: `trial_index`, `is_practice`, `ground_truth`, `rationale_variant`, `rationale_shown`, `certainty_marker`, `n_sources`, `claim_true` |
-| `rationale_rendered` | payload: `variant` (`correct`/`flawed`), `flaw_type` |
-| `rationale_toggle` | payload: `open` (bool), `latency_ms` — participant collapsed/expanded the reasoning block |
-| `citation_click` | target: source index; payload: `latency_ms` from `trial_start` |
-| `source_open` | target: source index |
-| `source_close` | target: source index; payload: `open_duration_ms` (raw), `focused_ms`, `reason` (`close-btn`/`overlay`/`escape`/`chip-toggle`/`switch`/`trial_end`) |
-| `source_visible` | target: source index; payload: `pct` — IntersectionObserver ratio of the excerpt inside the scroll area |
-| `scroll_milestone` | target: source index; payload: `pct` ∈ {25,50,75,100} — scroll depth of the drawer, first crossing per open |
-| `window_blur` / `window_focus` | — |
-| `visibilitychange` | payload: `state` |
-| `verdict` | payload: `choice`, `correct` (vs `ground_truth`; `cannot_tell` counts as incorrect), `latency_ms`, `revision` |
-| `confidence_set` / `trust_set` | payload: `value` (1–7), `latency_ms` |
-| `justification_text` | payload: `text`, `len` (trials 3 & 5 only) |
-| `trial_end` | payload: `nSourcesOpened`, `openOrder`, `perSource` `{opens,raw_ms,focused_ms}`, `focusCorrectedDwellMs`, `rawDwellMs`, `verdict`, `confidence`, `trust`, `ground_truth`, `rationale_variant`, `claim_true` |
-| `attention_check` | target: `mid_trials`/`survey`; payload: `check_id`, `pass`, `first_choice`/`value` |
-| `questionnaire_item` | target: item id (`trust_1..6`, `lit_1..5`, `habitual_check`, `fam_<trial_id>`, `age`, `gender`, `gender_self`, `funnel`); payload: `value`/`text` |
-| `debrief_shown` | — |
-| `session_end` | payload: `n_events`, `total_perf_ms` |
-| `submit_attempt` / `submit_result` | payload: `endpoint_set`, `n_events` / `ok`, `status`, `via` (`json`/`plain`/`nocors`), `error`, `opaque` |
+- A static site cannot hide its files. A participant who opens the browser's developer tools can read
+  the item set, including the correct answers. The questionnaire asks whether anything was looked up.
+- The endpoint is tested against a local stand-in with the same protocol, not against Google itself;
+  step 7 above is the real test.
 
-**Focus-corrected dwell** accumulates only while
-`document.visibilityState === 'visible'` *and* `document.hasFocus()`; raw dwell
-is stored alongside. Both are accumulated per-source (`perSource`) and per-trial
-(`focusCorrectedDwellMs` vs `rawDwellMs`).
+## Before collecting data
 
-The final POST body is `{ meta: {…}, events: […] }` — the complete event array.
-
-## Privacy
-
-- No IP address is stored by this instrument; Prolific IDs are pseudonymous.
-- Only the Prolific URL parameters (`PROLIFIC_PID`, `STUDY_ID`, `SESSION_ID`)
-  are captured; they go to your own Sheet, not to third parties.
-- Behavioural logs contain interaction events only — no keystroke content beyond
-  the optional free-text fields participants type themselves.
-
-## Pilot / preview
-
-`https://<owner>.github.io/say-vs-click/?preview=1` runs a flagged preview
-session. With `ENDPOINT_URL` empty, the completion screen shows the download
-fallback; use it to inspect a real `events` payload end-to-end.
-
-## Design decisions (documented deviations)
-
-- **`groundTruth` derived, not authored.** The stimuli file ships
-  `sourcesSupported`/`sourcesUnsupported` variants per trial; the assignment
-  draws exactly 2 trials to display the non-entailing set, and that draw defines
-  `ground_truth`. This makes "which trials carry unsupported citations" a true
-  per-participant randomisation rather than a fixed property of the items.
-- **`Cannot tell` counts as incorrect** for `verdict.correct` (it is neither a
-  correct "supported" nor a correct "not supported"); the raw `choice` is always
-  logged for separate analysis.
-- **One source panel at a time.** Opening a chip while another source is open
-  closes the first (logged with `reason:"switch"`). Dwell accounting is
-  unambiguous per source.
-- **`instructions_viewed` is logged when leaving** the instructions screen, with
-  `dwell_ms` — the view duration is the analytically useful quantity.
-- **Sliders start visually at 4 but unset**; the next step unlocks on the first
-  `input` event, and `confidence_set`/`trust_set` are logged on `change`
-  (commit). Participants intending 4 can nudge the slider — logged as usual.
-- **Attention check pass = first click** for the mid-trials check; a wrong first
-  click shows a hint and lets the participant continue (data already logged).
-- **Reload keeps the same session.** `session_id`, assignment and the event log
-  persist in `localStorage`; a reload appends a second `session_start` with
-  `resumed:true` and continues the sequence — the partial log is never wiped.
+Second reader checks every item (admin page, *Preview this item*). Pilot with 5 to 8 people. Ethics and
+data protection cleared with the supervisor. Item set frozen; commit hash and item-set version noted in the thesis.

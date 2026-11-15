@@ -1,840 +1,259 @@
-/*
- * say-vs-click — study runtime.
- *
- * A citation-backed AI question-answering simulation that measures participants'
- * verification behaviour. Plain HTML/CSS/JS, no build step, no dependencies.
- *
- * Event log: one append-only array; every record carries
- *   { seq, session_id, prolific_pid, study_id, condition:{presence, certainty},
- *     trial_id, event_type, t_perf, t_wall, visibility, target, payload }
- * The array is persisted to localStorage after every event (crash recovery) and
- * beacon'd to ENDPOINT_URL on pagehide. See README § "Data schema".
- */
-'use strict';
+/* Runtime of the study: screens, trial flow, behavioural logging, submission.
+ * Design logic lives in design.js, materials in items.js, settings in config.js. */
 (function () {
-
-  /* ================= tiny helpers ================= */
-  const $  = (s, r) => (r || document).querySelector(s);
-  const $$ = (s, r) => Array.prototype.slice.call((r || document).querySelectorAll(s));
-  const now  = () => performance.now();
-  const iso  = () => new Date().toISOString();
-  const round = x => Math.round(x * 100) / 100;
-
-  function shuffle(a) {
-    for (let i = a.length - 1; i > 0; i--) {
-      const j = (Math.random() * (i + 1)) | 0;
-      const t = a[i]; a[i] = a[j]; a[j] = t;
-    }
-    return a;
-  }
-  function sample(a) { return a[(Math.random() * a.length) | 0]; }
-  function uuid() {
-    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
-    return 's-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
-  }
-  function escapeHtml(s) {
-    return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-  }
-
-  /* ================= configuration & identity ================= */
-  const CFG = (typeof CONFIG !== 'undefined') ? CONFIG : (window.CONFIG || {});
-  const ENDPOINT_URL    = CFG.ENDPOINT_URL || '';
-  const COMPLETION_URL  = CFG.PROLIFIC_COMPLETION_URL || '';
-  const COMPLETION_CODE = CFG.PROLIFIC_COMPLETION_CODE || 'COMPLETION-CODE-PENDING';
-  const RETURN_CODE     = CFG.PROLIFIC_RETURN_CODE || COMPLETION_CODE;
-  const SHOW_FAM        = CFG.SHOW_FAMILIARITY_RECAP !== false;
-
-  const STIM = (typeof STIMULI !== 'undefined') ? STIMULI : (window.STIMULI || { practice: null, trials: [] });
-  const Q    = (typeof QUESTIONNAIRE !== 'undefined') ? QUESTIONNAIRE : (window.QUESTIONNAIRE || { situationalTrust: [], aiLiteracy: [], habitualCheck: '', funnel: '', demographics: [] });
-  const N_TRIALS = STIM.trials.length;
-
+  "use strict";
+  const $ = (s, r) => (r || document).querySelector(s);
+  const app = $("#app"), reader = $("#reader");
   const qs = new URLSearchParams(location.search);
-  const LS_EVENTS  = 'svc.events.v1';
-  const LS_SESSION = 'svc.session.v1';
+  const t0 = performance.now();
+  const now = () => Math.round(performance.now() - t0);
 
-  let stored = null;
-  try { stored = JSON.parse(localStorage.getItem(LS_SESSION) || 'null'); } catch (e) { stored = null; }
-
-  // Prolific passes ?PROLIFIC_PID=..&STUDY_ID=..&SESSION_ID=.. ; anything else is a preview.
-  const session_id   = qs.get('SESSION_ID')   || (stored && stored.session_id)   || uuid();
-  const prolific_pid = qs.get('PROLIFIC_PID') || (stored && stored.prolific_pid) || '';
-  const study_id     = qs.get('STUDY_ID')     || (stored && stored.study_id)     || '';
-  const preview      = qs.get('preview') === '1' || !qs.get('PROLIFIC_PID');
-
-  /* ================= condition assignment =================
-   * Between-subjects: presence {shown,hidden} x certainty {none,certain,uncertain}.
-   * Within-subjects: trial order shuffled; exactly 2 of N trials get the flawed
-   * rationale and exactly 2 get the non-entailing source set (independent draws,
-   * so a trial may carry both). Persisted per session so a reload cannot
-   * re-randomise a participant into a different cell.
-   */
-  let assignment = stored && stored.assignment;
-  if (!assignment || !assignment.order) assignment = makeAssignment();
-
-  function makeAssignment() {
-    const ids = STIM.trials.map(t => t.id);
-    const order = shuffle(ids.slice());
-    const flawedPool = STIM.trials.filter(t => Array.isArray(t.rationaleFlawed) && t.rationaleFlawed.length).map(t => t.id);
-    const unsupPool  = STIM.trials.filter(t => Array.isArray(t.sourcesUnsupported) && t.sourcesUnsupported.length).map(t => t.id);
-    const flawed      = shuffle(flawedPool.slice()).slice(0, Math.min(2, flawedPool.length));
-    const unsupported = shuffle(unsupPool.slice()).slice(0, Math.min(2, unsupPool.length));
-    return {
-      presence:  sample(['shown', 'hidden']),
-      certainty: sample(['none', 'certain', 'uncertain']),
-      order, flawed, unsupported
-    };
+  // ------------------------------------------------------------ session
+  const KEY = "svc2_session";
+  let S = null;
+  try { S = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) { S = null; }
+  const WAS_DONE = !!(S && S.done) && !qs.has("reset");
+  if (!S || qs.has("reset")) {
+    const list = qs.has("list") ? (parseInt(qs.get("list"), 10) % 8 + 8) % 8 : null;   // null = assigned at start
+    S = { session_id: (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2)),
+          list: list, items_version: null, seed: Math.floor(Math.random() * 2147483647), src: qs.get("src") || "", started_at: new Date().toISOString(), done: false };
+    try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* private mode */ }
+  }
+  // The item set comes from the data endpoint when the admin has saved one there; otherwise from items.js.
+  // It is fixed at the start of a session and kept in the browser, so a reload continues with the same items.
+  let ITEMSET = ITEMS, PRACT = PRACTICE, TRIALS = null; const byId = {};
+  const IKEY = "svc2_items_" + S.session_id;
+  const rndList = () => Math.floor(Math.random() * 8);
+  function setup(items, practice, version, list) {
+    ITEMSET = items; PRACT = practice || PRACTICE; S.items_version = version;
+    if (S.list === null || S.list === undefined) S.list = list;
+    Object.keys(byId).forEach(k => delete byId[k]); ITEMSET.forEach(i => byId[i.id] = i);
+    TRIALS = buildTrials(ITEMSET, S.list, S.seed); save();
+  }
+  function snapshot() { try { localStorage.setItem(IKEY, JSON.stringify({ items: ITEMSET, practice: PRACT })); } catch (e) { /* ignore */ } }
+  function prepare() {
+    try { const snap = JSON.parse(localStorage.getItem(IKEY) || "null");
+      if (snap && S.items_version && S.list !== null) { setup(snap.items, snap.practice, S.items_version, S.list); return Promise.resolve("ok"); } } catch (e) { /* fall through */ }
+    const local = () => { setup(ITEMS, PRACTICE, ITEMS_VERSION, rndList()); snapshot(); return "ok"; };
+    if (!CONFIG.ENDPOINT_URL) return Promise.resolve(local());
+    const ctl = new AbortController(); const timer = setTimeout(() => ctl.abort(), 8000);
+    return fetch(CONFIG.ENDPOINT_URL + "?action=start", { signal: ctl.signal, redirect: "follow" }).then(r => r.json()).then(j => {
+      clearTimeout(timer);
+      if (j && j.open === false) return "closed";
+      const remoteOk = !!(j && j.items && validateItems(j.items).length === 0);
+      const list = (j && typeof j.list === "number") ? j.list % 8 : rndList();
+      if (remoteOk) setup(j.items, j.practice, j.items_version, list); else setup(ITEMS, PRACTICE, ITEMS_VERSION, list);
+      log("start_info", { remote_items: remoteOk, list: S.list, items_version: S.items_version }); snapshot(); return "ok";
+    }).catch(() => { clearTimeout(timer); log("start_info", { remote_items: false, endpoint_error: true }); return local(); });
   }
 
-  function persistSession() {
-    try {
-      localStorage.setItem(LS_SESSION, JSON.stringify({
-        session_id, prolific_pid, study_id, assignment, saved_at: iso()
-      }));
-    } catch (e) { /* storage full/blocked — keep going */ }
+  // progress survives a reload: finished trials and events are kept in localStorage
+  const PKEY = "svc2_progress_" + S.session_id;
+  let P = null; try { P = JSON.parse(localStorage.getItem(PKEY) || "null"); } catch (e) { P = null; }
+  const events = P ? P.events : []; const trialRows = P ? P.trialRows : []; let seq = events.length; let cur = null;
+  function persist() { try { localStorage.setItem(PKEY, JSON.stringify({ events: events, trialRows: trialRows })); } catch (e) { /* storage full or blocked */ } }
+  let inTrials = false;
+  window.addEventListener("beforeunload", e => { if (inTrials && !S.done) { e.preventDefault(); e.returnValue = ""; } });
+  function log(type, payload) {
+    events.push({ seq: ++seq, t: now(), wall: new Date().toISOString(), trial: cur ? cur.index : null,
+                  item: cur ? cur.item : null, type: type, visible: document.visibilityState === "visible", payload: payload || null });
   }
-  persistSession();
+  document.addEventListener("visibilitychange", () => { log("visibility", { state: document.visibilityState }); if (R.open) R.tick(); });
+  window.addEventListener("blur", () => log("window_blur")); window.addEventListener("focus", () => log("window_focus"));
 
-  /* ================= event log ================= */
-  let events = [];
-  try {
-    const prev = JSON.parse(localStorage.getItem(LS_EVENTS) || 'null');
-    if (Array.isArray(prev) && prev.length && prev[0] && prev[0].session_id === session_id) {
-      events = prev;                                   // continue the partial log after reload
-    } else if (Array.isArray(prev) && prev.length) {
-      localStorage.setItem('svc.events.archive.' + (prev[0] && prev[0].session_id || 'old'), JSON.stringify(prev));
-    }
-  } catch (e) { events = []; }
-  let seq = events.length;
-
-  let cur = null;       // active trial context (null outside trials)
-  let openSrc = null;   // state of the currently open source panel
-
-  function logEvent(event_type, opts) {
-    opts = opts || {};
-    const e = {
-      seq: ++seq,
-      session_id: session_id,
-      prolific_pid: prolific_pid,
-      study_id: study_id,
-      condition: { presence: assignment.presence, certainty: assignment.certainty },
-      trial_id: opts.trial_id !== undefined ? opts.trial_id : (cur ? cur.id : null),
-      event_type: event_type,
-      t_perf: round(now()),
-      t_wall: iso(),
-      visibility: document.visibilityState,
-      target: opts.target !== undefined ? opts.target : null,
-      payload: opts.payload !== undefined ? opts.payload : null
-    };
-    events.push(e);
-    try { localStorage.setItem(LS_EVENTS, JSON.stringify(events)); } catch (err) { /* keep going */ }
-    return e;
+  function meta() {
+    return { session_id: S.session_id, study_version: CONFIG.STUDY_VERSION, list: S.list, items_version: S.items_version, seed: S.seed, src: S.src, started_at: S.started_at,
+             preview: !CONFIG.ENDPOINT_URL, user_agent: navigator.userAgent, screen: screen.width + "x" + screen.height,
+             window: innerWidth + "x" + innerHeight, language: navigator.language, tz_offset_min: new Date().getTimezoneOffset() };
   }
-
-  /* ================= focus-corrected dwell =================
-   * Raw dwell = wall time between open and close. Focused dwell accumulates only
-   * while document.visibilityState==='visible' AND the window has focus.
-   * Event-driven accumulation: accrue() is called on every state change (and on
-   * a 500 ms heartbeat) and adds elapsed time to the active timers only when the
-   * previous slice was spent visible+focused.
-   */
-  const track = { active: false, last: 0 };
-  function activeNow() { return document.visibilityState === 'visible' && document.hasFocus(); }
-  function accrue() {
-    const t = now();
-    if (track.active) {
-      const d = t - track.last;
-      if (cur)     cur.focusedDwellMs += d;
-      if (openSrc) openSrc.focusedMs  += d;
-    }
-    track.last = t;
-    track.active = activeNow();
-  }
-  window.addEventListener('blur',  () => { accrue(); logEvent('window_blur'); });
-  window.addEventListener('focus', () => { accrue(); logEvent('window_focus'); });
-  document.addEventListener('visibilitychange', () => {
-    accrue();
-    logEvent('visibilitychange', { payload: { state: document.visibilityState } });
+  function payload(final) { return JSON.stringify({ meta: Object.assign(meta(), { final: !!final, n_trials_done: trialRows.length }), trials: trialRows, questionnaire: Q, events: events }); }
+  window.addEventListener("pagehide", () => {
+    if (S.done || !CONFIG.ENDPOINT_URL || !trialRows.length) return;
+    try { navigator.sendBeacon(CONFIG.ENDPOINT_URL, new Blob([payload(false)], { type: "text/plain" })); } catch (e) { /* ignore */ }
   });
-  setInterval(accrue, 500);
 
-  /* ================= screens / progress ================= */
-  function setProgress(label, frac) {
-    $('#progress-label').textContent = label;
-    $('#progress-fill').style.width = Math.round(frac * 100) + '%';
-  }
-  function showScreen(id) {
-    $$('.screen').forEach(s => { s.hidden = (s.id !== 's-' + id); });
-    window.scrollTo(0, 0);
-  }
-  function reveal(sel) {
-    const el = $(sel);
-    if (el && el.hidden) {
-      el.hidden = false;
-      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-    }
-  }
+  // ------------------------------------------------------------ helpers
+  function h(html) { app.innerHTML = html; window.scrollTo(0, 0); }
+  function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+  function progress(txt) { $("#progress").textContent = txt || ""; }
 
-  /* ================= flow =================
-   * queue[0] = practice; queue[1..N] = main trials in this participant's order.
-   * Interstitials (practice-done, attention check) do not consume positions.
-   */
-  const queue = [];
-  if (STIM.practice) queue.push({ stim: STIM.practice, practice: true, index: 0 });
-  assignment.order.forEach((id, i) => {
-    const stim = STIM.trials.find(t => t.id === id);
-    if (stim) queue.push({ stim: stim, practice: false, index: i + 1 });
-  });
-  let qpos = -1;
+  // ------------------------------------------------------------ source reader with focused-time accounting
+  const R = { open: false, idx: null, openedAt: 0, visibleMs: 0, lastTick: 0, maxScroll: 0,
+    tick() { const n = now(); if (this.wasVisible) this.visibleMs += n - this.lastTick; this.lastTick = n; this.wasVisible = document.visibilityState === "visible"; },
+    show(idx, src) {
+      this.open = true; this.idx = idx; this.openedAt = this.lastTick = now(); this.visibleMs = 0; this.maxScroll = 0; this.wasVisible = document.visibilityState === "visible";
+      $("#reader-title").textContent = "[" + (idx + 1) + "] " + src.title; $("#reader-origin").textContent = "Source: " + src.origin + ", article “" + src.title + "” (summary)";
+      $("#reader-text").textContent = src.text; reader.hidden = false; $("#reader-text").scrollTop = 0; $("#reader-close").focus();
+      requestAnimationFrame(() => log("source_rendered", { source: idx + 1 }));
+      log("source_open", { source: idx + 1 });
+    },
+    close(how) {
+      if (!this.open) return; this.tick(); this.open = false; reader.hidden = true;
+      const rec = { source: this.idx + 1, open_ms: now() - this.openedAt, visible_ms: this.visibleMs, max_scroll: this.maxScroll, closed_by: how };
+      log("source_close", rec); if (cur) cur.sourceVisits.push(rec);
+    } };
+  $("#reader-close").addEventListener("click", () => R.close("button"));
+  reader.addEventListener("click", e => { if (e.target === reader) R.close("backdrop"); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && R.open) R.close("escape"); });
+  $("#reader-text").addEventListener("scroll", e => { const el = e.target; const d = el.scrollHeight - el.clientHeight; if (d > 0) R.maxScroll = Math.max(R.maxScroll, Math.round(100 * el.scrollTop / d)); });
 
-  function nextStep() {
-    qpos++;
-    if (qpos < queue.length) {
-      const entry = queue[qpos];
-      if (!entry.practice && entry.index === 1 && STIM.practice) {
-        showScreen('practice-done'); setProgress('Practice complete', 0.16);
-        return;
-      }
-      if (!entry.practice && entry.index === 4) {   // mid-trials attention check after trial 3
-        startAttnCheck();
-        return;
-      }
-      startTrial(entry);
+  // ------------------------------------------------------------ screens
+  function screenGate() {
+    if (innerWidth < CONFIG.MIN_WIDTH) {
+      log("device_gate", { width: innerWidth });
+      h('<div class="card"><h1>Please use a larger screen</h1><p>This study needs a laptop or desktop computer, because the sources open in a reading window. Please open the link again on a computer. Thank you.</p></div>');
       return;
     }
-    startSurvey1();
+    screenConsent();
   }
-
-  /* ================= 1. consent ================= */
-  $('#consent-check').addEventListener('change', e => {
-    $('#consent-btn').disabled = !e.target.checked;
-  });
-  $('#consent-btn').addEventListener('click', () => {
-    logEvent('consent_given');
-    instrT0 = now();
-    showScreen('instructions'); setProgress('Instructions', 0.06);
-  });
-
-  /* ================= 2. instructions ================= */
-  let instrT0 = 0;
-  $('#instr-btn').addEventListener('click', () => {
-    logEvent('instructions_viewed', { payload: { dwell_ms: Math.round(now() - instrT0) } });
-    showScreen('device'); setProgress('Device check', 0.1);
-    runDeviceCheck(true);
-  });
-
-  /* ================= 3. device gate =================
-   * Pass: viewport >= 1024px wide AND no primary touch input
-   * (navigator.maxTouchPoints === 0 or a fine pointer). Re-checked on resize
-   * while either gate screen is showing.
-   */
-  function deviceOk() {
-    const fine = window.matchMedia ? matchMedia('(pointer:fine)').matches : true;
-    return window.innerWidth >= 1024 && (navigator.maxTouchPoints === 0 || fine);
+  function screenConsent() {
+    log("screen", { name: "consent" });
+    h('<div class="card"><h1>Judging AI answers</h1>' +
+      '<p>This study is part of a master’s thesis at Hochschule Neu-Ulm. It looks at how people judge answers given by an AI assistant.</p>' +
+      '<h2>What you will do</h2><p>You will see 16 short factual questions, each with an answer from an AI assistant. For each one you decide whether to accept or reject the answer. A few questions about your experience follow. The study takes about 15 minutes.</p>' +
+      '<h2>Your data</h2><p>The study records your decisions and how you use the page (for example what you click and for how long). It does not ask for your name, e-mail address or any other detail that identifies you, and it sets no tracking cookies. The data are used for research and may be published in anonymous form.</p>' +
+      '<h2>Voluntary participation</h2><p>Taking part is voluntary and unpaid. You can stop at any time by closing the page. You must be at least 18 years old.</p>' +
+      '<p class="muted">Contact: ' + esc(CONFIG.CONTACT) + '</p>' +
+      '<p><label><input type="checkbox" id="c1"> I am at least 18 years old, I have read the information above and I agree to take part.</label></p>' +
+      '<button class="btn primary" id="go" disabled>Start</button></div>');
+    $("#c1").addEventListener("change", e => $("#go").disabled = !e.target.checked);
+    $("#go").addEventListener("click", () => { log("consent_given"); h('<div class="card"><p>Loading\u2026</p></div>');
+      prepare().then(r => { if (r === "closed") { h('<div class="card"><h1>The study is closed</h1><p>This study is not accepting participants at the moment. Thank you for your interest.</p></div>'); return; } screenInstructions(0); }); });
   }
-  let deviceState = null;
-  function runDeviceCheck(first) {
-    const ok = deviceOk();
-    const state = ok ? 'pass' : 'fail';
-    if (first || state !== deviceState) {
-      logEvent('device_check', { trial_id: null, payload: {
-        pass: ok,
-        viewport_w: window.innerWidth, viewport_h: window.innerHeight,
-        maxTouchPoints: navigator.maxTouchPoints,
-        pointer_fine: window.matchMedia ? matchMedia('(pointer:fine)').matches : null,
-        user_agent: navigator.userAgent
-      }});
-      deviceState = state;
-    }
-    if (ok) {
-      setTimeout(() => { if (!$('#s-device').hidden || !$('#s-incompatible').hidden) nextStep(); }, 550);
-    } else {
-      $('#return-code').textContent = RETURN_CODE;
-      showScreen('incompatible'); setProgress('Device check', 0.1);
-    }
-  }
-  let devTimer = null;
-  window.addEventListener('resize', () => {
-    if ($('#s-device').hidden && $('#s-incompatible').hidden) return;
-    clearTimeout(devTimer);
-    devTimer = setTimeout(() => runDeviceCheck(false), 250);
-  });
-
-  $('#practice-done-btn').addEventListener('click', () => startTrial(queue[qpos]));
-
-  /* ================= 4–5. trials ================= */
-  function startTrial(entry) {
-    const stim = entry.stim;
-    const variant = assignment.flawed.includes(stim.id) ? 'flawed' : 'correct';
-    const useU = assignment.unsupported.includes(stim.id) &&
-                 Array.isArray(stim.sourcesUnsupported) && stim.sourcesUnsupported.length > 0;
-    const sources = useU ? stim.sourcesUnsupported : (stim.sourcesSupported || stim.sources || []);
-    const gt = useU ? 'unsupported' : 'supported';   // does the displayed source set entail the answer?
-
-    cur = {
-      id: stim.id, index: entry.index, practice: entry.practice, stim: stim,
-      variant: variant, gt: gt, sources: sources,
-      t0: now(), focusedDwellMs: 0,
-      openOrder: [], perSource: {},
-      verdict: null, revisions: 0, confidence: null, trust: null,
-      justShown: !entry.practice && (entry.index === 3 || entry.index === 5),
-      ended: false
-    };
-    track.active = activeNow(); track.last = now();
-
-    renderTrial();
-    showScreen('trial');
-    setProgress(
-      cur.practice ? 'Practice trial' : 'Trial ' + cur.index + ' of ' + N_TRIALS,
-      cur.practice ? 0.15 : 0.16 + 0.58 * (cur.index / N_TRIALS)
-    );
-    logEvent('trial_start', { payload: {
-      trial_index: cur.index, is_practice: cur.practice,
-      ground_truth: cur.gt, rationale_variant: cur.variant,
-      rationale_shown: !$('#rationale-block').hidden,
-      certainty_marker: assignment.certainty,
-      n_sources: cur.sources.length,
-      claim_true: cur.stim.claimTrue !== undefined ? cur.stim.claimTrue : null
-    }});
-    if (!$('#rationale-block').hidden) {
-      logEvent('rationale_rendered', { payload: { variant: cur.variant, flaw_type: cur.stim.flawType || null } });
-    }
-  }
-
-  function renderTrial() {
-    $('#trial-tag').textContent   = cur.practice ? 'Practice trial' : 'Trial ' + cur.index + ' of ' + N_TRIALS;
-    $('#claim-text').textContent  = cur.stim.claim;
-    $('#answer-text').textContent = cur.stim.answerText;
-
-    const rb = $('#rationale-block');
-    const steps = cur.variant === 'flawed' ? cur.stim.rationaleFlawed : cur.stim.rationaleCorrect;
-    if (assignment.presence === 'shown' && Array.isArray(steps) && steps.length) {
-      const ol = $('#rationale-list');
-      ol.innerHTML = '';
-      steps.forEach(s => {
-        const li = document.createElement('li');
-        li.textContent = s;
-        ol.appendChild(li);
-      });
-      if (!rb.open) expectedToggle = true;   // render queues an async open-toggle
-      rb.hidden = false; rb.open = true;
-    } else {
-      rb.hidden = true;
-    }
-
-    const cl = $('#certainty-line');
-    if (assignment.certainty !== 'none' && cur.stim.certaintyMarkers && cur.stim.certaintyMarkers[assignment.certainty]) {
-      cl.textContent = cur.stim.certaintyMarkers[assignment.certainty];
-      cl.hidden = false;
-    } else {
-      cl.hidden = true;
-    }
-
-    const chips = $('#citation-chips');
-    chips.innerHTML = '';
-    cur.sources.forEach((s, i) => {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'chip';
-      b.dataset.idx = i;
-      b.textContent = '[' + (i + 1) + ']';
-      b.setAttribute('aria-label', 'Open source ' + (i + 1) + ': ' + (s.title || ''));
-      b.setAttribute('aria-expanded', 'false');
-      b.addEventListener('click', () => onChip(i));
-      chips.appendChild(b);
-    });
-    $('#chips-note').hidden = cur.sources.length > 0;
-
-    // reset the staged response blocks
-    $$('#verdict-card .verdict-btn').forEach(b => { b.classList.remove('sel'); b.disabled = false; });
-    $('#confidence-card').hidden = true;
-    $('#trust-card').hidden = true;
-    $('#just-card').hidden = true;
-    $('#next-btn').hidden = true;
-    $('#conf-range').value = 4;  $('#conf-val').textContent = '–';
-    $('#trust-range').value = 4; $('#trust-val').textContent = '–';
-    $('#just-text').value = '';
-    confSet = false; trustSet = false;
-  }
-
-  /* ---------- rationale collapse/expand ---------------------
-   * <details> toggle events are dispatched asynchronously, so the one queued
-   * by renderTrial's `rb.open = true` arrives after rendering finishes. Track
-   * the open value render expects and swallow exactly that event; every other
-   * toggle is a real user action. */
-  let expectedToggle = null;
-  $('#rationale-block').addEventListener('toggle', e => {
-    if (expectedToggle !== null && e.target.open === expectedToggle) {
-      expectedToggle = null;
-      return;
-    }
-    expectedToggle = null;
-    if (!cur || cur.ended || e.target.hidden) return;
-    logEvent('rationale_toggle', { payload: { open: e.target.open, latency_ms: Math.round(now() - cur.t0) } });
-  });
-
-  /* ---------- citation chips + source drawer ---------- */
-  function onChip(i) {
-    if (!cur || cur.ended) return;
-    logEvent('citation_click', { target: i, payload: { latency_ms: Math.round(now() - cur.t0) } });
-    if (openSrc && openSrc.index === i) closeSource('chip-toggle');
-    else openSource(i);
-  }
-
-  function openSource(i) {
-    if (!cur) return;
-    if (openSrc) closeSource('switch');
-    accrue();
-    const s = cur.sources[i];
-    openSrc = { index: i, t0: now(), focusedMs: 0, milestones: {}, lastPct: -1 };
-    cur.openOrder.push(i);
-
-    $('#drawer-label').textContent   = s.label || ('Source ' + (i + 1));
-    $('#drawer-title').textContent   = s.title || '';
-    $('#drawer-excerpt').textContent = s.excerpt || '';
-    const dr = $('#source-drawer');
-    dr.hidden = false;
-    $('#drawer-overlay').hidden = false;
-    $('#drawer-scroll').scrollTop = 0;
-    requestAnimationFrame(() => dr.classList.add('open'));
-    attachSourceObservers();
-    $$('#citation-chips .chip').forEach(c => {
-      const on = +c.dataset.idx === i;
-      c.classList.toggle('active', on);
-      c.setAttribute('aria-expanded', on ? 'true' : 'false');
-    });
-    logEvent('source_open', { target: i, payload: { source_index: i } });
-    $('#drawer-close').focus();
-  }
-
-  function closeSource(reason) {
-    if (!openSrc) return;
-    accrue();
-    const s = openSrc; openSrc = null;
-    detachSourceObservers();
-    const raw = now() - s.t0;
-    logEvent('source_close', { target: s.index, payload: {
-      source_index: s.index,
-      open_duration_ms: Math.round(raw),
-      focused_ms: Math.round(s.focusedMs),
-      reason: reason
-    }});
-    const agg = cur.perSource[s.index] || (cur.perSource[s.index] = { opens: 0, raw_ms: 0, focused_ms: 0 });
-    agg.opens++; agg.raw_ms += Math.round(raw); agg.focused_ms += Math.round(s.focusedMs);
-
-    const dr = $('#source-drawer');
-    dr.classList.remove('open');
-    $('#drawer-overlay').hidden = true;
-    setTimeout(() => { if (!openSrc) dr.hidden = true; }, 240);
-    $$('#citation-chips .chip').forEach(c => { c.classList.remove('active'); c.setAttribute('aria-expanded', 'false'); });
-    if (reason !== 'switch' && reason !== 'trial_end') {
-      const chip = $('#citation-chips .chip[data-idx="' + s.index + '"]');
-      if (chip) chip.focus();
-    }
-  }
-
-  $('#drawer-close').addEventListener('click', () => closeSource('close-btn'));
-  $('#drawer-overlay').addEventListener('click', () => closeSource('overlay'));
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && openSrc) closeSource('escape');
-  });
-
-  /* ---------- source visibility + scroll tracking ---------- */
-  let srcIO = null;
-  function onSrcScroll() {
-    if (!openSrc) return;
-    const el = $('#drawer-scroll');
-    const range = el.scrollHeight - el.clientHeight;
-    if (range <= 0) return;
-    const pct = Math.min(100, Math.round((el.scrollTop + el.clientHeight) / el.scrollHeight * 100));
-    [25, 50, 75, 100].forEach(m => {
-      if (pct >= m && !openSrc.milestones[m]) {
-        openSrc.milestones[m] = true;
-        logEvent('scroll_milestone', { target: openSrc.index, payload: { source_index: openSrc.index, pct: m } });
-      }
-    });
-  }
-  function attachSourceObservers() {
-    const el = $('#drawer-scroll');
-    el.addEventListener('scroll', onSrcScroll, { passive: true });
-    if (typeof window.IntersectionObserver === 'function') {
-      srcIO = new IntersectionObserver(entries => {
-        if (!openSrc) return;
-        entries.forEach(en => {
-          const pct = Math.round(en.intersectionRatio * 100);
-          if (pct !== openSrc.lastPct) {
-            openSrc.lastPct = pct;
-            logEvent('source_visible', { target: openSrc.index, payload: { source_index: openSrc.index, pct: pct } });
-          }
-        });
-      }, { root: el, threshold: [0, 0.25, 0.5, 0.75, 1] });
-      srcIO.observe($('#drawer-excerpt'));
-    }
-  }
-  function detachSourceObservers() {
-    $('#drawer-scroll').removeEventListener('scroll', onSrcScroll);
-    if (srcIO) { srcIO.disconnect(); srcIO = null; }
-  }
-
-  /* ---------- verdict → confidence → trust → justification → next ---------- */
-  $$('#verdict-card .verdict-btn').forEach(b => b.addEventListener('click', () => onVerdict(b.dataset.verdict)));
-  function onVerdict(choice) {
-    if (!cur || cur.ended) return;
-    cur.revisions++;
-    cur.verdict = choice;
-    const correct = (choice === 'supported'     && cur.gt === 'supported') ||
-                    (choice === 'not_supported' && cur.gt === 'unsupported');
-    logEvent('verdict', { payload: {
-      choice: choice, correct: correct, ground_truth: cur.gt,
-      latency_ms: Math.round(now() - cur.t0), revision: cur.revisions
-    }});
-    $$('#verdict-card .verdict-btn').forEach(b => b.classList.toggle('sel', b.dataset.verdict === choice));
-    reveal('#confidence-card');
-  }
-
-  let confSet = false, trustSet = false;
-  $('#conf-range').addEventListener('input', e => {
-    const v = +e.target.value;
-    $('#conf-val').textContent = v;
-    if (!cur || cur.ended) return;
-    cur.confidence = v;
-    if (!confSet) { confSet = true; reveal('#trust-card'); }
-  });
-  $('#conf-range').addEventListener('change', e => {
-    if (!cur || cur.ended) return;
-    logEvent('confidence_set', { payload: { value: +e.target.value, latency_ms: Math.round(now() - cur.t0) } });
-  });
-  $('#trust-range').addEventListener('input', e => {
-    const v = +e.target.value;
-    $('#trust-val').textContent = v;
-    if (!cur || cur.ended) return;
-    cur.trust = v;
-    if (!trustSet) {
-      trustSet = true;
-      if (cur.justShown) reveal('#just-card');
-      reveal('#next-btn');
-    }
-  });
-  $('#trust-range').addEventListener('change', e => {
-    if (!cur || cur.ended) return;
-    logEvent('trust_set', { payload: { value: +e.target.value, latency_ms: Math.round(now() - cur.t0) } });
-  });
-
-  $('#next-btn').addEventListener('click', endTrial);
-  function endTrial() {
-    if (!cur || cur.ended) return;
-    accrue();
-    if (openSrc) closeSource('trial_end');
-    if (cur.justShown) {
-      const t = $('#just-text').value.trim();
-      logEvent('justification_text', { payload: { text: t, len: t.length } });
-    }
-    cur.ended = true;
-    logEvent('trial_end', { payload: {
-      nSourcesOpened: cur.openOrder.length,
-      openOrder: cur.openOrder.slice(),
-      perSource: cur.perSource,
-      focusCorrectedDwellMs: Math.round(cur.focusedDwellMs),
-      rawDwellMs: Math.round(now() - cur.t0),
-      verdict: cur.verdict,
-      confidence: cur.confidence,
-      trust: cur.trust,
-      ground_truth: cur.gt,
-      rationale_variant: cur.variant,
-      claim_true: cur.stim.claimTrue !== undefined ? cur.stim.claimTrue : null
-    }});
-    cur = null;
-    nextStep();
-  }
-
-  /* ================= 6. mid-trials attention check =================
-   * Instructed-response item styled like a trial verdict card. The FIRST click
-   * decides pass/fail; a wrong first click lets them retry so they can proceed.
-   */
-  let attnLogged = false, attnPassed = false;
-  function startAttnCheck() {
-    attnLogged = false; attnPassed = false;
-    $('#attn-hint').hidden = true;
-    $$('#s-attn .verdict-btn').forEach(b => b.classList.remove('sel'));
-    showScreen('attn');
-    setProgress('Quick check', 0.16 + 0.58 * (3.5 / N_TRIALS));
-  }
-  $$('#s-attn .verdict-btn').forEach(b => b.addEventListener('click', () => {
-    if (attnPassed) return;
-    const c = b.dataset.choice;
-    if (!attnLogged) {
-      attnLogged = true;
-      logEvent('attention_check', { target: 'mid_trials', payload: {
-        check_id: 'mid_trials', pass: c === 'not_supported', first_choice: c
-      }});
-    }
-    if (c === 'not_supported') {
-      attnPassed = true;
-      b.classList.add('sel');
-      setTimeout(() => startTrial(queue[qpos]), 650);
-    } else {
-      $('#attn-hint').hidden = false;
-    }
-  }));
-
-  /* ================= 7. post-questionnaire ================= */
-  function likertItem(id, text, n, endL, endR) {
-    const fs = document.createElement('fieldset');
-    fs.className = 'likert';
-    const lg = document.createElement('legend');
-    lg.textContent = text;
-    fs.appendChild(lg);
-    const row = document.createElement('div');
-    row.className = 'likert-row';
-    const e1 = document.createElement('span');
-    e1.className = 'likert-end'; e1.textContent = endL;
-    row.appendChild(e1);
-    for (let v = 1; v <= n; v++) {
-      const lb = document.createElement('label');
-      lb.className = 'likert-opt';
-      const inp = document.createElement('input');
-      inp.type = 'radio'; inp.name = 'q_' + id; inp.value = v;
-      inp.setAttribute('aria-label', v + ' of ' + n);
-      const sp = document.createElement('span');
-      sp.className = 'likert-pill'; sp.textContent = v;
-      lb.appendChild(inp); lb.appendChild(sp);
-      row.appendChild(lb);
-    }
-    const e2 = document.createElement('span');
-    e2.className = 'likert-end'; e2.textContent = endR;
-    row.appendChild(e2);
-    fs.appendChild(row);
-    return fs;
-  }
-
-  const s1Answered = new Set();
-  let s1Total = 0;
-  function startSurvey1() {
-    const tWrap = $('#trust-items'); tWrap.innerHTML = '';
-    Q.situationalTrust.forEach((txt, i) => tWrap.appendChild(likertItem('trust_' + (i + 1), txt, 7, 'Strongly disagree', 'Strongly agree')));
-    const aWrap = $('#attn-item'); aWrap.innerHTML = '';
-    aWrap.appendChild(likertItem('attn_survey', "To show that you are reading carefully, please select '2' for this item.", 7, 'Strongly disagree', 'Strongly agree'));
-    const lWrap = $('#lit-items'); lWrap.innerHTML = '';
-    Q.aiLiteracy.forEach((txt, i) => lWrap.appendChild(likertItem('lit_' + (i + 1), txt, 7, 'Strongly disagree', 'Strongly agree')));
-    const hWrap = $('#habit-item'); hWrap.innerHTML = '';
-    hWrap.appendChild(likertItem('habitual_check', Q.habitualCheck, 5, 'Never', 'Always'));
-    s1Total = Q.situationalTrust.length + 1 + Q.aiLiteracy.length + 1;
-    showScreen('survey1');
-    setProgress('Questionnaire', 0.8);
-  }
-  $('#s-survey1').addEventListener('change', e => {
-    const inp = e.target;
-    if (!inp.name || inp.name.indexOf('q_') !== 0) return;
-    const id = inp.name.slice(2);
-    const v = +inp.value;
-    const firstAnswer = !s1Answered.has(id);
-    if (id === 'attn_survey') {
-      if (firstAnswer) {
-        logEvent('attention_check', { target: 'survey', payload: { check_id: 'survey_embedded', pass: v === 2, value: v } });
-      }
-    } else {
-      logEvent('questionnaire_item', { target: id, payload: { item_id: id, value: v } });
-    }
-    s1Answered.add(id);
-    $('#survey1-btn').disabled = s1Answered.size < s1Total;
-  });
-  $('#survey1-btn').addEventListener('click', () => startSurvey2());
-
-  const s2Answered = new Set();
-  let s2Total = 0;
-  let ageOk = false, genderOk = false;
-  function startSurvey2() {
-    const famWrap = $('#fam-items'); famWrap.innerHTML = '';
-    $('#fam-block').hidden = !SHOW_FAM;
-    s2Total = 0;
-    if (SHOW_FAM) {
-      queue.filter(en => !en.practice).forEach(en => {
-        famWrap.appendChild(likertItem('fam_' + en.stim.id, '“' + en.stim.claim + '”', 5, 'Not at all familiar', 'Very familiar'));
-        s2Total++;
-      });
-    }
-    $('#funnel-label').textContent = Q.funnel || 'What do you think this study was about?';
-    updateS2Btn();
-    showScreen('survey2');
-    setProgress('Questionnaire', 0.88);
-  }
-  function updateS2Btn() {
-    $('#survey2-btn').disabled = !(s2Answered.size >= s2Total && ageOk && genderOk);
-  }
-  $('#s-survey2').addEventListener('change', e => {
-    const inp = e.target;
-    if (inp.name && inp.name.indexOf('q_') === 0) {
-      const id = inp.name.slice(2);
-      logEvent('questionnaire_item', { target: id, payload: { item_id: id, value: +inp.value } });
-      s2Answered.add(id);
-    }
-    updateS2Btn();
-  });
-  $('#age-input').addEventListener('change', () => {
-    const v = parseInt($('#age-input').value, 10);
-    ageOk = Number.isFinite(v) && v >= 18 && v <= 100;
-    if (ageOk) logEvent('questionnaire_item', { target: 'age', payload: { item_id: 'age', value: v } });
-    updateS2Btn();
-  });
-  $('#gender-select').addEventListener('change', () => {
-    const v = $('#gender-select').value;
-    genderOk = !!v;
-    $('#gender-self').hidden = (v !== 'self');
-    if (genderOk) logEvent('questionnaire_item', { target: 'gender', payload: { item_id: 'gender', value: v } });
-    updateS2Btn();
-  });
-  $('#survey2-btn').addEventListener('click', () => {
-    const self = $('#gender-self').value.trim();
-    if (self) logEvent('questionnaire_item', { target: 'gender_self', payload: { item_id: 'gender_self', value: self } });
-    logEvent('questionnaire_item', { target: 'funnel', payload: { item_id: 'funnel', text: $('#funnel-text').value.trim() } });
-    showDebrief();
-  });
-
-  /* ================= 8. debrief ================= */
-  function showDebrief() {
-    const list = $('#debrief-list');
-    list.innerHTML = '';
-    queue.filter(en => !en.practice).forEach(en => {
-      const stim = en.stim;
-      const wasU = assignment.unsupported.includes(stim.id);
-      const wasF = assignment.flawed.includes(stim.id);
-      const div = document.createElement('div');
-      div.className = 'debrief-item';
-      let html = '<strong>“' + escapeHtml(stim.claim) + '”</strong> — ';
-      html += wasU ? 'the cited sources did <strong>not</strong> support the answer'
-                   : 'the cited sources supported the answer';
-      if (assignment.presence === 'shown' && wasF) html += ' · <em>the reasoning shown contained a flawed step</em>';
-      div.innerHTML = html + '.';
-      list.appendChild(div);
-    });
-    showScreen('debrief');
-    setProgress('Debrief', 0.94);
-    logEvent('debrief_shown');
-  }
-
-  /* ================= 9. submit ================= */
-  function buildPayload() {
-    const first = events.find(e => e.event_type === 'session_start');
-    return {
-      meta: {
-        session_id: session_id,
-        prolific_pid: prolific_pid,
-        study_id: study_id,
-        prolific_session_id: qs.get('SESSION_ID') || '',
-        preview: preview,
-        condition: { presence: assignment.presence, certainty: assignment.certainty },
-        assignment: { order: assignment.order, flawed: assignment.flawed, unsupported: assignment.unsupported },
-        user_agent: navigator.userAgent,
-        viewport: { w: window.innerWidth, h: window.innerHeight },
-        started_wall: first ? first.t_wall : null,
-        ended_wall: iso(),
-        n_events: events.length,
-        n_trials: N_TRIALS,
-        instrument: 'say-vs-click/1.0'
-      },
-      events: events
-    };
-  }
-
-  function postJSON(body, timeoutMs) {
-    // Apps Script web apps do not answer CORS preflights, so we try three
-    // transports in order: application/json (spec), text/plain (simple request,
-    // no preflight), and a no-cors opaque POST as last resort.
-    const attempt = (opts, via) => fetch(ENDPOINT_URL, Object.assign({ method: 'POST', body: body }, opts))
-      .then(r => ({ ok: r.ok, status: r.status, via: via }))
-      .catch(err => ({ ok: false, error: String(err), via: via }));
-    const jsonOpts = { headers: { 'Content-Type': 'application/json' } };
-    if (window.AbortSignal && AbortSignal.timeout) jsonOpts.signal = AbortSignal.timeout(timeoutMs);
-    return attempt(jsonOpts, 'json').then(r => {
-      if (r.ok) return r;
-      const plainOpts = { headers: { 'Content-Type': 'text/plain;charset=utf-8' } };
-      if (window.AbortSignal && AbortSignal.timeout) plainOpts.signal = AbortSignal.timeout(timeoutMs);
-      return attempt(plainOpts, 'plain');
-    }).then(r => {
-      if (r.ok) return r;
-      return attempt({ mode: 'no-cors' }, 'nocors')
-        .then(() => ({ ok: true, status: null, via: 'nocors', opaque: true }))
-        .catch(err => ({ ok: false, error: String(err), via: 'nocors' }));
+  function screenInstructions(attempt) {
+    log("screen", { name: "instructions", attempt: attempt });
+    h('<div class="card"><h1>How it works</h1>' +
+      '<p>Each page shows a question and the answer of an AI assistant. The assistant can be wrong.</p>' +
+      '<p>Below the answer you find the sources the assistant cites. You may open them if you wish. On some pages the assistant also shows its reasoning.</p>' +
+      '<p>Your task is to decide whether the answer is correct. Choose <b>Accept</b> if you think it is correct and <b>Reject</b> if you think it is wrong, then confirm. After confirming you cannot go back.</p>' +
+      '<p>Please do not look anything up outside this page. At the end you will see how many of your decisions were right.</p>' +
+      '<h2>Two quick checks</h2>' +
+      '<fieldset><legend>1. What do you decide on each page?</legend><div class="opts">' +
+      '<label><input type="radio" name="k1" value="a">Whether I like the answer</label><label><input type="radio" name="k1" value="b">Whether the answer is correct</label><label><input type="radio" name="k1" value="c">Whether the question is interesting</label></div></fieldset>' +
+      '<fieldset><legend>2. Can the answers of the assistant be wrong?</legend><div class="opts">' +
+      '<label><input type="radio" name="k2" value="a">No, never</label><label><input type="radio" name="k2" value="b">Yes, they can</label></div></fieldset>' +
+      '<div class="err" id="err"></div><button class="btn primary" id="go">Continue to a practice question</button></div>');
+    $("#go").addEventListener("click", () => {
+      const a = ($('input[name=k1]:checked') || {}).value, b = ($('input[name=k2]:checked') || {}).value;
+      const ok = a === "b" && b === "b"; log("comprehension", { k1: a || null, k2: b || null, ok: ok, attempt: attempt });
+      if (ok) return runTrial(-1);
+      if (attempt >= 1) { h('<div class="card"><h1>Thank you</h1><p>The two checks were not answered correctly, so the study ends here. Thank you for your interest.</p></div>'); S.done = true; save(); return; }
+      screenInstructions(attempt + 1); $("#err").textContent = "At least one check was not answered correctly. Please read the text again and retry.";
     });
   }
 
-  let submitted = false;
-  function submitData() {
-    logEvent('session_end', { trial_id: null, payload: { n_events: events.length, total_perf_ms: Math.round(now()) } });
-    persistSession();
+  function runTrial(i) {
+    const practice = i < 0;
+    const t = practice ? { index: 0, item: "practice", trace: true, supported: true, key: PRACT.key } : TRIALS[i];
+    const it = practice ? PRACT : byId[t.item];
+    const v = t.supported ? "s" : "u";
+    inTrials = true;
+    cur = { index: t.index, item: t.item, sourceVisits: [], opens: [], startedAt: now(), firstChoiceAt: null, changes: 0 };
+    progress(practice ? "Practice question" : "Question " + t.index + " of " + TRIALS.length);
+    log("trial_start", { trace: t.trace, supported: t.supported, practice: practice });
+    h((practice ? '<p class="muted">Practice question. It does not count.</p>' : '') +
+      '<div class="card"><div class="label">Question</div><div class="question">' + esc(it.question) + '</div></div>' +
+      '<div class="card"><div class="label">Answer of the AI assistant</div><div class="answer">' + esc(it.answer[v]) + '</div>' +
+      '<div class="label" style="margin-top:16px">Sources</div><div class="sources" aria-label="Cited sources">' + it.sources.map((s, k) => '<button class="chip" data-k="' + k + '"><b>[' + (k + 1) + ']</b>' + esc(s.title) + '</button>').join("") + '</div></div>' +
+      (t.trace ? '<div class="card trace"><div class="label">Reasoning of the AI assistant</div><ol>' + it.trace[v].map(x => '<li>' + esc(x) + '</li>').join("") + '</ol></div>' : '') +
+      '<div class="card decision"><span>Your decision:</span><button class="btn choice acc" data-d="accept">Accept the answer</button><button class="btn choice rej" data-d="reject">Reject the answer</button>' +
+      '<button class="btn primary" id="confirm" disabled>Confirm decision</button></div>');
+    let choice = null;
+    app.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { const k = +b.dataset.k; cur.opens.push(k + 1); R.show(k, it.sources[k]); }));
+    app.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => {
+      if (choice && choice !== b.dataset.d) cur.changes++; choice = b.dataset.d; if (cur.firstChoiceAt === null) cur.firstChoiceAt = now();
+      app.querySelectorAll(".choice").forEach(x => x.classList.toggle("sel", x === b)); $("#confirm").disabled = false; log("decision_select", { decision: choice });
+    }));
+    $("#confirm").addEventListener("click", () => {
+      const end = now(); const visits = cur.sourceVisits; const distinct = Array.from(new Set(cur.opens));
+      const answerSays = t.supported ? it.key : (it.key === "yes" ? "no" : "yes");
+      const judgedCorrect = (choice === "accept") === (answerSays === it.key);
+      const row = { session_id: S.session_id, list: S.list, trial_index: t.index, item: t.item, practice: practice, trace: t.trace ? 1 : 0, supported: t.supported ? 1 : 0,
+        key: it.key, decision: choice, correct: judgedCorrect ? 1 : 0, opened_any: distinct.length ? 1 : 0, n_sources_distinct: distinct.length, n_source_opens: cur.opens.length,
+        open_order: cur.opens.join(">"), source_open_ms: visits.reduce((a, x) => a + x.open_ms, 0), source_visible_ms: visits.reduce((a, x) => a + x.visible_ms, 0),
+        max_scroll: visits.reduce((a, x) => Math.max(a, x.max_scroll), 0), decision_changes: cur.changes, first_choice_ms: cur.firstChoiceAt - cur.startedAt, trial_ms: end - cur.startedAt,
+        verification_success: (!t.supported && choice === "reject" && distinct.length > 0) ? 1 : 0 };
+      log("decision_confirm", { decision: choice, correct: judgedCorrect }); log("trial_end", row);
+      if (!practice) { trialRows.push(row); persist(); } cur = null;
+      if (practice) return screenAfterPractice();
+      if (i + 1 < TRIALS.length) return runTrial(i + 1);
+      screenQuestionnaire();
+    });
+  }
+  function screenAfterPractice() {
+    progress(""); log("screen", { name: "after_practice" });
+    h('<div class="card"><h1>The study starts now</h1><p>That was the practice question. The 16 questions that follow work in the same way. On some of them the assistant shows its reasoning and on others it does not.</p><button class="btn primary" id="go">Start</button></div>');
+    $("#go").addEventListener("click", () => runTrial(0));
+  }
 
-    const finishUI = (ok, msg) => {
-      $('#submit-running').hidden = true;
-      $('#submit-done').hidden = false;
-      $('#submit-msg').textContent = msg;
-      $('#completion-code').textContent = COMPLETION_CODE;
-      const link = $('#prolific-link');
-      if (COMPLETION_URL) { link.href = COMPLETION_URL; link.hidden = false; }
-      setProgress('Complete', 1);
-    };
-
-    if (!ENDPOINT_URL) {
-      logEvent('submit_attempt', { trial_id: null, payload: { endpoint_set: false, n_events: events.length } });
-      logEvent('submit_result',  { trial_id: null, payload: { ok: false, reason: 'no_endpoint' } });
-      finishUI(false, 'Your responses were recorded locally in this browser. Please download your session data and report the completion code on Prolific.');
-      return;
-    }
-    logEvent('submit_attempt', { trial_id: null, payload: { endpoint_set: true, n_events: events.length } });
-    const body = JSON.stringify(buildPayload());   // includes submit_attempt
-    postJSON(body, 15000).then(res => {
-      logEvent('submit_result', { trial_id: null, payload: {
-        ok: !!res.ok, status: res.status != null ? res.status : null,
-        via: res.via || null, error: res.error || null, opaque: !!res.opaque
-      }});
-      if (res.ok) {
-        submitted = true;
-        finishUI(true, 'Your responses were submitted. Click below to return to Prolific and complete the study.');
-      } else {
-        finishUI(false, 'We could not reach the data server — your data is safe in this browser. Please download your session data and report the completion code on Prolific.');
-      }
+  // ------------------------------------------------------------ questionnaire
+  let Q = null;
+  function likert(name, legend) {
+    const lab = ["Not at all", "Slightly", "Moderately", "Very", "Completely"];
+    return '<fieldset><legend>' + legend + '</legend><div class="opts">' + lab.map((l, k) => '<label><input type="radio" name="' + name + '" value="' + (k + 1) + '">' + (k + 1) + " " + l + '</label>').join("") + '</div></fieldset>';
+  }
+  function select(name, legend, opts) { return '<fieldset><legend>' + legend + '</legend><select name="' + name + '"><option value="">Please choose</option>' + opts.map(o => '<option>' + o + '</option>').join("") + '</select></fieldset>'; }
+  function screenQuestionnaire() {
+    inTrials = false; progress("Final questions"); log("screen", { name: "questionnaire" });
+    h('<div class="card"><h1>A few final questions</h1><form id="f">' +
+      likert("trust_trace", "1. How trustworthy were the answers that came <u>with</u> the assistant’s reasoning?") +
+      likert("trust_notrace", "2. How trustworthy were the answers that came <u>without</u> the assistant’s reasoning?") +
+      '<fieldset><legend>3. On how many of the 16 questions did you open at least one source? Please give your best estimate.</legend><input type="number" name="self_checked" min="0" max="16" step="1"></fieldset>' +
+      '<fieldset><legend>4. What made you open the sources, or leave them closed?</legend><textarea name="open_why"></textarea></fieldset>' +
+      '<fieldset><legend>5. How did seeing the assistant’s reasoning affect your decisions?</legend><textarea name="open_trace"></textarea></fieldset>' +
+      select("ai_use", "6. How often do you use AI assistants such as ChatGPT?", ["Never", "Less than once a month", "A few times a month", "A few times a week", "Daily"]) +
+      select("habit_check", "7. When an AI assistant cites sources, how often do you open them?", ["Never", "Rarely", "Sometimes", "Often", "Always"]) +
+      select("age", "8. Age", ["18–24", "25–34", "35–44", "45–54", "55–64", "65 or older", "Prefer not to say"]) +
+      select("gender", "9. Gender", ["Female", "Male", "Non-binary or other", "Prefer not to say"]) +
+      select("education", "10. Highest completed education", ["Secondary school", "Vocational training", "Bachelor’s degree", "Master’s degree", "Doctorate", "Other", "Prefer not to say"]) +
+      select("english", "11. How well do you read English?", ["Basic", "Intermediate", "Advanced", "Native speaker"]) +
+      select("lookup", "12. Did you look anything up outside this page during the study? An honest answer helps and has no consequences.", ["No", "Yes, once or twice", "Yes, several times"]) +
+      '<div class="err" id="err"></div><button class="btn primary" type="submit">Finish</button></form></div>');
+    $("#f").addEventListener("submit", e => {
+      e.preventDefault(); const fd = new FormData(e.target); const o = {}; fd.forEach((v, k) => o[k] = v);
+      const need = ["trust_trace", "trust_notrace", "self_checked", "ai_use", "habit_check", "age", "gender", "education", "english", "lookup"];
+      const miss = need.filter(k => o[k] === undefined || o[k] === "");
+      if (miss.length) { $("#err").textContent = "Please answer questions 1 to 3 and 6 to 12. Questions 4 and 5 are optional but very helpful."; return; }
+      o.self_checked = Math.max(0, Math.min(16, parseInt(o.self_checked, 10) || 0)); o.trust_trace = +o.trust_trace; o.trust_notrace = +o.trust_notrace;
+      o.logged_checked = trialRows.filter(r => r.opened_any).length; Q = o; log("questionnaire_submit"); screenDebrief();
     });
   }
 
-  $('#finish-btn').addEventListener('click', () => {
-    showScreen('submit'); setProgress('Submitting', 0.97);
-    submitData();
-  });
+  // ------------------------------------------------------------ debrief + submit
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { /* ignore */ } }
+  function screenDebrief() {
+    progress(""); log("session_end"); S.done = true; save(); try { localStorage.removeItem(PKEY); localStorage.removeItem(IKEY); } catch (e) { /* ignore */ }
+    const n = trialRows.filter(r => r.correct).length;
+    const rows = trialRows.slice().sort((a, b) => a.trial_index - b.trial_index).map(r => { const it = byId[r.item];
+      return '<tr><td>' + r.trial_index + '</td><td>' + esc(it.question) + '</td><td>' + (it.key === "yes" ? "Yes" : "No") + '</td><td>' + (r.supported ? "correct" : "wrong") + '</td><td class="' + (r.correct ? "tagok" : "tagno") + '">' + (r.correct ? "right" : "not right") + '</td></tr>'; }).join("");
+    h('<div class="card"><h1>Thank you</h1><p id="status" class="muted">Saving your responses…</p>' +
+      '<p>You judged <b>' + n + ' of ' + trialRows.length + '</b> answers correctly.</p>' +
+      '<h2>What this study is about</h2><p>The assistant in this study was simulated. Its answers, its reasoning and the source summaries were prepared in advance, and <b>4 of the 16 answers were deliberately wrong</b>, although the cited sources contained the correct information. The study examines whether people open the cited sources more or less often when an AI assistant shows its reasoning, and whether this changes how often wrong answers are noticed. This was not mentioned at the start because knowing it would have changed how people use the sources.</p>' +
+      '<p>If you would like your data removed, send the code below to the contact address within 14 days.</p><p><b>Your code:</b> <code>' + esc(S.session_id.slice(0, 8)) + '</code></p><p class="muted">Contact: ' + esc(CONFIG.CONTACT) + '</p>' +
+      '<p>Please do not tell others who might take part what the study is about.</p></div>' +
+      '<div class="card"><h2>The correct answers</h2><table class="res"><tr><th>#</th><th>Question</th><th>Correct answer</th><th>The assistant was</th><th>Your decision was</th></tr>' + rows + '</table></div>' +
+      '<div class="card" id="dl" hidden><p>The data could not be sent automatically. Please download the file and send it to the contact address.</p><button class="btn" id="dlb">Download my responses</button></div>');
+    submit();
+  }
+  function offerDownload(msg) {
+    $("#status").textContent = msg; $("#dl").hidden = false;
+    $("#dlb").addEventListener("click", () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([payload(true)], { type: "application/json" })); a.download = "responses-" + S.session_id.slice(0, 8) + ".json"; a.click(); });
+  }
+  function submit(tryNo) {
+    tryNo = tryNo || 1;
+    if (!CONFIG.ENDPOINT_URL) return offerDownload("Preview mode: no data endpoint is configured, so nothing was sent.");
+    fetch(CONFIG.ENDPOINT_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: payload(true), redirect: "follow" })
+      .then(r => r.json()).then(j => { if (!j || !j.ok) throw new Error("endpoint"); $("#status").textContent = "Your responses have been saved. You can close this page."; })
+      .catch(() => { if (tryNo < 3) return setTimeout(() => submit(tryNo + 1), 1500 * tryNo); offerDownload("Automatic saving failed."); });
+  }
 
-  $('#download-btn').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(buildPayload(), null, 2)], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'say-vs-click-' + session_id + '.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  });
-
-  /* Partial-data safety: beacon the whole log when the page is hidden/closed. */
-  window.addEventListener('pagehide', () => {
-    if (!ENDPOINT_URL) return;
-    try {
-      navigator.sendBeacon(ENDPOINT_URL, new Blob([JSON.stringify(buildPayload())], { type: 'application/json' }));
-    } catch (e) { /* best effort */ }
-  });
-
-  /* ================= init ================= */
-  logEvent('session_start', { trial_id: null, payload: {
-    resumed: events.length > 1,
-    preview: preview,
-    condition: { presence: assignment.presence, certainty: assignment.certainty },
-    order: assignment.order,
-    flawed: assignment.flawed,
-    unsupported: assignment.unsupported,
-    user_agent: navigator.userAgent,
-    viewport: { w: window.innerWidth, h: window.innerHeight },
-    url_params: {
-      prolific_pid: !!qs.get('PROLIFIC_PID'),
-      study_id: !!qs.get('STUDY_ID'),
-      session_id: !!qs.get('SESSION_ID')
-    }
-  }});
-  showScreen('consent');
-  setProgress('Consent', 0.02);
-
+  function screenResume() {
+    log("resume", { trials_done: trialRows.length });
+    h('<div class="card"><h1>Welcome back</h1><p>You have already answered ' + trialRows.length + ' of ' + TRIALS.length + ' questions. The study continues where you left off.</p><button class="btn primary" id="go">Continue</button></div>');
+    $("#go").addEventListener("click", () => trialRows.length < TRIALS.length ? runTrial(trialRows.length) : screenQuestionnaire());
+  }
+  if (WAS_DONE) { h('<div class="card"><h1>Thank you</h1><p>This study has already been completed in this browser. Each person can take part once.</p></div>'); return; }
+  if (innerWidth >= CONFIG.MIN_WIDTH && trialRows.length > 0) { prepare().then(screenResume); return; }
+  log("session_start", meta());
+  screenGate();
 })();
