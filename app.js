@@ -75,7 +75,7 @@
   // ------------------------------------------------------------ helpers
   function h(html) { app.innerHTML = html; window.scrollTo(0, 0); }
   function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
-  function progress(txt) { $("#progress").textContent = txt || ""; }
+  function progress(txt, frac) { $("#progress").textContent = txt || ""; $("#bar").hidden = frac === undefined; if (frac !== undefined) $("#barfill").style.width = Math.round(100 * frac) + "%"; }
 
   // ------------------------------------------------------------ source reader with focused-time accounting
   const R = { open: false, idx: null, openedAt: 0, visibleMs: 0, lastTick: 0, maxScroll: 0,
@@ -106,18 +106,23 @@
     }
     screenConsent();
   }
+  const ABOUT = '<details class="about"><summary>About this study</summary>' +
+    '<p><b>Who runs it?</b> ' + esc(CONFIG.RESEARCHER) + ', as part of a master’s thesis in the programme Artificial Intelligence and Data Analytics at Hochschule Neu-Ulm (HNU), Germany.</p>' +
+    '<p><b>What is it about?</b> AI assistants now answer many everyday questions. The thesis looks at how people decide whether such an answer can be relied on. More detail follows at the end, because knowing it in advance could change how people take part.</p>' +
+    '<p><b>What happens with the results?</b> They are analysed in anonymous form for the thesis and may appear in a scientific publication. No individual person can be identified.</p>' +
+    '<p><b>Questions, or interested in the findings?</b> Write to <a href="mailto:' + esc(CONFIG.EMAIL) + '">' + esc(CONFIG.EMAIL) + '</a>.</p></details>';
   function screenConsent() {
-    log("screen", { name: "consent" });
-    h('<div class="card"><h1>Judging AI answers</h1>' +
-      '<p>This study is part of a master’s thesis at Hochschule Neu-Ulm. It looks at how people judge answers given by an AI assistant.</p>' +
-      '<h2>What you will do</h2><p>You will see 16 short factual questions, each with an answer from an AI assistant. For each one you decide whether to accept or reject the answer. A few questions about your experience follow. The study takes about 15 minutes.</p>' +
-      '<h2>Your data</h2><p>The study records your decisions and how you use the page (for example what you click and for how long). It does not ask for your name, e-mail address or any other detail that identifies you, and it sets no tracking cookies. The data are used for research and may be published in anonymous form.</p>' +
-      '<h2>Voluntary participation</h2><p>Taking part is voluntary and unpaid. You can stop at any time by closing the page. You must be at least 18 years old.</p>' +
-      '<p class="muted">Contact: ' + esc(CONFIG.CONTACT) + '</p>' +
-      '<p><label><input type="checkbox" id="c1"> I am at least 18 years old, I have read the information above and I agree to take part.</label></p>' +
-      '<button class="btn primary" id="go" disabled>Start</button></div>');
+    log("screen", { name: "consent" }); progress("");
+    h('<div class="card hero"><div class="tag">Master’s thesis study · about 15 minutes</div><h1>Can you tell when an AI answer is right?</h1>' +
+      '<p class="lead">You will see 16 short factual questions, each with an answer from an AI assistant. You decide whether to accept or reject the answer. A few quick multiple-choice questions follow.</p></div>' +
+      '<div class="cols3"><div class="card mini c1"><b>Anonymous</b><span>No name, no e-mail address, no tracking cookies.</span></div>' +
+      '<div class="card mini c2"><b>Voluntary</b><span>Unpaid. You can stop at any time by closing the page.</span></div>' +
+      '<div class="card mini c3"><b>On a computer</b><span>Please use a laptop or desktop, and take part only once.</span></div></div>' +
+      '<div class="card"><h2 style="margin-top:0">Your data</h2><p>The study records your decisions and how you use the page, for example what you click and for how long. The data are used for research only and are published only in anonymous form.</p>' + ABOUT +
+      '<label class="check"><input type="checkbox" id="c1"><span>I am at least 18 years old, I have read the information above and I agree to take part.</span></label>' +
+      '<button class="btn primary big" id="go" disabled>Start the study</button></div>');
     $("#c1").addEventListener("change", e => $("#go").disabled = !e.target.checked);
-    $("#go").addEventListener("click", () => { log("consent_given"); h('<div class="card"><p>Loading\u2026</p></div>');
+    $("#go").addEventListener("click", () => { log("consent_given"); h('<div class="card"><p>Loading…</p></div>');
       prepare().then(r => { if (r === "closed") { h('<div class="card"><h1>The study is closed</h1><p>This study is not accepting participants at the moment. Thank you for your interest.</p></div>'); return; } screenInstructions(0); }); });
   }
   function screenInstructions(attempt) {
@@ -149,12 +154,12 @@
     const v = t.supported ? "s" : "u";
     inTrials = true;
     cur = { index: t.index, item: t.item, sourceVisits: [], opens: [], startedAt: now(), firstChoiceAt: null, changes: 0 };
-    progress(practice ? "Practice question" : "Question " + t.index + " of " + TRIALS.length);
+    progress(practice ? "Practice question" : "Question " + t.index + " of " + TRIALS.length, practice ? 0 : (t.index - 1) / TRIALS.length);
     log("trial_start", { trace: t.trace, supported: t.supported, practice: practice });
     h((practice ? '<p class="muted">Practice question. It does not count.</p>' : '') +
-      '<div class="card"><div class="label">Question</div><div class="question">' + esc(it.question) + '</div></div>' +
+      '<div class="card q"><div class="label">Question</div><div class="question">' + esc(it.question) + '</div></div>' +
       '<div class="card"><div class="label">Answer of the AI assistant</div><div class="answer">' + esc(it.answer[v]) + '</div>' +
-      '<div class="label" style="margin-top:16px">Sources</div><div class="sources" aria-label="Cited sources">' + it.sources.map((s, k) => '<button class="chip" data-k="' + k + '"><b>[' + (k + 1) + ']</b>' + esc(s.title) + '</button>').join("") + '</div></div>' +
+      '<div style="margin-top:16px"><div class="label">Sources</div></div><div class="sources" aria-label="Cited sources">' + it.sources.map((s, k) => '<button class="chip" data-k="' + k + '"><b>[' + (k + 1) + ']</b>' + esc(s.title) + '</button>').join("") + '</div></div>' +
       (t.trace ? '<div class="card trace"><div class="label">Reasoning of the AI assistant</div><ol>' + it.trace[v].map(x => '<li>' + esc(x) + '</li>').join("") + '</ol></div>' : '') +
       '<div class="card decision"><span>Your decision:</span><button class="btn choice acc" data-d="accept">Accept the answer</button><button class="btn choice rej" data-d="reject">Reject the answer</button>' +
       '<button class="btn primary" id="confirm" disabled>Confirm decision</button></div>');
@@ -186,35 +191,64 @@
     $("#go").addEventListener("click", () => runTrial(0));
   }
 
-  // ------------------------------------------------------------ questionnaire
+  // ------------------------------------------------------------ questionnaire (closed questions, three short pages)
   let Q = null;
-  function likert(name, legend) {
-    const lab = ["Not at all", "Slightly", "Moderately", "Very", "Completely"];
-    return '<fieldset><legend>' + legend + '</legend><div class="opts">' + lab.map((l, k) => '<label><input type="radio" name="' + name + '" value="' + (k + 1) + '">' + (k + 1) + " " + l + '</label>').join("") + '</div></fieldset>';
+  const FORM = [
+    { title: "Your decisions", fields: [
+      { name: "trust_trace", type: "scale", q: "How trustworthy were the answers that came <u>with</u> the assistant’s reasoning?", lo: "Not at all", hi: "Completely" },
+      { name: "trust_notrace", type: "scale", q: "How trustworthy were the answers that came <u>without</u> the assistant’s reasoning?", lo: "Not at all", hi: "Completely" },
+      { name: "self_checked", type: "count", q: "On how many of the 16 questions did you open at least one source?", hint: "Your best estimate is fine." } ] },
+    { title: "Sources and reasoning", fields: [
+      { name: "why_open", type: "multi", q: "When you opened a source, what were your reasons?", hint: "Select all that apply.", exclusive: ["none"], opts: [
+        ["unsure", "I was unsure whether the answer was correct"], ["surprised", "The answer surprised me or went against what I knew"], ["trace_doubt", "The assistant’s reasoning did not convince me"],
+        ["trace_pointer", "The reasoning showed me what was worth checking"], ["no_trace", "No reasoning was shown, so I wanted to see evidence"], ["be_sure", "I wanted to be sure before deciding"], ["curious", "I was simply curious"], ["none", "I did not open any source"]] },
+      { name: "why_closed", type: "multi", q: "When you left the sources closed, what were your reasons?", hint: "Select all that apply.", exclusive: ["always"], opts: [
+        ["knew", "I already knew the answer"], ["plausible", "The answer sounded plausible"], ["trace_convinced", "The assistant’s reasoning convinced me"], ["trace_instead", "I checked the reasoning and felt no need for the sources"],
+        ["effort", "Opening and reading sources takes too much time"], ["trust_ai", "I generally trust AI assistants on questions like these"], ["unnoticed", "I did not notice the sources"], ["always", "I opened a source on every question"]] },
+      { name: "trace_read", type: "single", q: "When the assistant showed its reasoning, how often did you read it?", opts: [["never", "Never"], ["few", "On a few questions"], ["most", "On most questions"], ["all", "On every question"]] },
+      { name: "trace_effect", type: "single", q: "Overall, how did seeing the reasoning affect your decisions?", opts: [["accept", "It made me more willing to accept answers"], ["critical", "It made me more critical of answers"], ["none", "It made no difference"], ["mixed", "It differed from question to question"]] } ] },
+    { title: "About you", fields: [
+      { name: "ai_use", type: "single", q: "How often do you use AI assistants such as ChatGPT?", opts: [["never", "Never"], ["lt_monthly", "Less than once a month"], ["monthly", "A few times a month"], ["weekly", "A few times a week"], ["daily", "Daily"]] },
+      { name: "habit_check", type: "single", q: "When an AI assistant cites sources, how often do you open them?", opts: [["never", "Never"], ["rarely", "Rarely"], ["sometimes", "Sometimes"], ["often", "Often"], ["always", "Always"]] },
+      { name: "age", type: "single", q: "Your age", opts: [["18-24", "18–24"], ["25-34", "25–34"], ["35-44", "35–44"], ["45-54", "45–54"], ["55-64", "55–64"], ["65+", "65 or older"], ["na", "Prefer not to say"]] },
+      { name: "gender", type: "single", q: "Your gender", opts: [["female", "Female"], ["male", "Male"], ["other", "Non-binary or other"], ["na", "Prefer not to say"]] },
+      { name: "education", type: "single", q: "Highest completed education", opts: [["secondary", "Secondary school"], ["vocational", "Vocational training"], ["bachelor", "Bachelor’s degree"], ["master", "Master’s degree"], ["doctorate", "Doctorate"], ["other", "Other"], ["na", "Prefer not to say"]] },
+      { name: "english", type: "single", q: "How well do you read English?", opts: [["basic", "Basic"], ["intermediate", "Intermediate"], ["advanced", "Advanced"], ["native", "Native speaker"]] },
+      { name: "lookup", type: "single", q: "Did you look anything up outside this page during the study?", hint: "An honest answer helps and has no consequences.", opts: [["no", "No"], ["once", "Yes, once or twice"], ["several", "Yes, several times"]] },
+      { name: "comment", type: "text", q: "Anything else you would like to mention?", hint: "Optional." } ] } ];
+  const A = {};
+  function fieldHtml(f, n) {
+    const head = '<div class="qn">' + n + '</div><div class="qb"><div class="qt">' + f.q + '</div>' + (f.hint ? '<div class="muted">' + f.hint + '</div>' : "");
+    const on = v => f.type === "multi" ? (A[f.name] || []).indexOf(v) >= 0 : String(A[f.name]) === String(v);
+    let body = "";
+    if (f.type === "scale") body = '<div class="scale"><span class="muted">' + f.lo + '</span>' + [1, 2, 3, 4, 5].map(v => '<button type="button" class="opt num' + (on(v) ? " on" : "") + '" data-f="' + f.name + '" data-v="' + v + '">' + v + '</button>').join("") + '<span class="muted">' + f.hi + '</span></div>';
+    else if (f.type === "count") body = '<div class="opts tight">' + Array.from({ length: 17 }, (x, v) => '<button type="button" class="opt num' + (on(v) ? " on" : "") + '" data-f="' + f.name + '" data-v="' + v + '">' + v + '</button>').join("") + '</div>';
+    else if (f.type === "text") body = '<textarea data-t="' + f.name + '" maxlength="600">' + esc(A[f.name] || "") + '</textarea>';
+    else body = '<div class="opts' + (f.type === "multi" ? " col" : "") + '">' + f.opts.map(o => '<button type="button" class="opt' + (f.type === "multi" ? " box" : "") + (on(o[0]) ? " on" : "") + '" data-f="' + f.name + '" data-v="' + o[0] + '" aria-pressed="' + on(o[0]) + '">' + o[1] + '</button>').join("") + '</div>';
+    return '<div class="qrow" id="q_' + f.name + '">' + head + body + '</div></div>';
   }
-  function select(name, legend, opts) { return '<fieldset><legend>' + legend + '</legend><select name="' + name + '"><option value="">Please choose</option>' + opts.map(o => '<option>' + o + '</option>').join("") + '</select></fieldset>'; }
-  function screenQuestionnaire() {
-    inTrials = false; progress("Final questions"); log("screen", { name: "questionnaire" });
-    h('<div class="card"><h1>A few final questions</h1><form id="f">' +
-      likert("trust_trace", "1. How trustworthy were the answers that came <u>with</u> the assistant’s reasoning?") +
-      likert("trust_notrace", "2. How trustworthy were the answers that came <u>without</u> the assistant’s reasoning?") +
-      '<fieldset><legend>3. On how many of the 16 questions did you open at least one source? Please give your best estimate.</legend><input type="number" name="self_checked" min="0" max="16" step="1"></fieldset>' +
-      '<fieldset><legend>4. What made you open the sources, or leave them closed?</legend><textarea name="open_why"></textarea></fieldset>' +
-      '<fieldset><legend>5. How did seeing the assistant’s reasoning affect your decisions?</legend><textarea name="open_trace"></textarea></fieldset>' +
-      select("ai_use", "6. How often do you use AI assistants such as ChatGPT?", ["Never", "Less than once a month", "A few times a month", "A few times a week", "Daily"]) +
-      select("habit_check", "7. When an AI assistant cites sources, how often do you open them?", ["Never", "Rarely", "Sometimes", "Often", "Always"]) +
-      select("age", "8. Age", ["18–24", "25–34", "35–44", "45–54", "55–64", "65 or older", "Prefer not to say"]) +
-      select("gender", "9. Gender", ["Female", "Male", "Non-binary or other", "Prefer not to say"]) +
-      select("education", "10. Highest completed education", ["Secondary school", "Vocational training", "Bachelor’s degree", "Master’s degree", "Doctorate", "Other", "Prefer not to say"]) +
-      select("english", "11. How well do you read English?", ["Basic", "Intermediate", "Advanced", "Native speaker"]) +
-      select("lookup", "12. Did you look anything up outside this page during the study? An honest answer helps and has no consequences.", ["No", "Yes, once or twice", "Yes, several times"]) +
-      '<div class="err" id="err"></div><button class="btn primary" type="submit">Finish</button></form></div>');
-    $("#f").addEventListener("submit", e => {
-      e.preventDefault(); const fd = new FormData(e.target); const o = {}; fd.forEach((v, k) => o[k] = v);
-      const need = ["trust_trace", "trust_notrace", "self_checked", "ai_use", "habit_check", "age", "gender", "education", "english", "lookup"];
-      const miss = need.filter(k => o[k] === undefined || o[k] === "");
-      if (miss.length) { $("#err").textContent = "Please answer questions 1 to 3 and 6 to 12. Questions 4 and 5 are optional but very helpful."; return; }
-      o.self_checked = Math.max(0, Math.min(16, parseInt(o.self_checked, 10) || 0)); o.trust_trace = +o.trust_trace; o.trust_notrace = +o.trust_notrace;
+  function screenQuestionnaire(page) {
+    page = page || 0; inTrials = false; const P = FORM[page]; let n0 = 1; for (let k = 0; k < page; k++) n0 += FORM[k].fields.length;
+    progress("Final questions · part " + (page + 1) + " of " + FORM.length, (page + 1) / (FORM.length + 1)); if (page === 0) log("screen", { name: "questionnaire" });
+    h('<div class="card"><div class="tag">Almost done</div><h1>' + P.title + '</h1>' + P.fields.map((f, k) => fieldHtml(f, n0 + k)).join("") +
+      '<div class="err" id="err"></div><div class="row">' + (page ? '<button class="btn" id="back">Back</button>' : "") + '<button class="btn primary" id="next">' + (page + 1 < FORM.length ? "Continue" : "Finish") + '</button></div></div>');
+    const byName = {}; P.fields.forEach(f => byName[f.name] = f);
+    app.querySelectorAll(".opt").forEach(b => b.addEventListener("click", () => {
+      const f = byName[b.dataset.f], v = (f.type === "scale" || f.type === "count") ? +b.dataset.v : b.dataset.v;
+      if (f.type === "multi") { let cur = A[f.name] || []; const ex = f.exclusive || [];
+        if (cur.indexOf(v) >= 0) cur = cur.filter(x => x !== v); else cur = ex.indexOf(v) >= 0 ? [v] : cur.filter(x => ex.indexOf(x) < 0).concat([v]);
+        A[f.name] = cur; } else A[f.name] = v;
+      log("q_answer", { field: f.name, value: A[f.name] });
+      app.querySelectorAll('.opt[data-f="' + f.name + '"]').forEach(x => { const sel = f.type === "multi" ? A[f.name].indexOf(x.dataset.v) >= 0 : String(A[f.name]) === x.dataset.v; x.classList.toggle("on", sel); x.setAttribute("aria-pressed", sel); });
+      $("#q_" + f.name).classList.remove("missing"); }));
+    app.querySelectorAll("textarea[data-t]").forEach(t => t.addEventListener("input", () => A[t.dataset.t] = t.value));
+    if ($("#back")) $("#back").addEventListener("click", () => screenQuestionnaire(page - 1));
+    $("#next").addEventListener("click", () => {
+      const miss = P.fields.filter(f => f.type !== "text" && (A[f.name] === undefined || (f.type === "multi" && !A[f.name].length)));
+      app.querySelectorAll(".qrow").forEach(r => r.classList.remove("missing")); miss.forEach(f => $("#q_" + f.name).classList.add("missing"));
+      if (miss.length) { $("#err").textContent = "Please answer the highlighted question" + (miss.length > 1 ? "s" : "") + "."; $("#q_" + miss[0].name).scrollIntoView({ behavior: "smooth", block: "center" }); return; }
+      if (page + 1 < FORM.length) return screenQuestionnaire(page + 1);
+      const o = {}; FORM.forEach(pg => pg.fields.forEach(f => { const v = A[f.name]; o[f.name] = f.type === "multi" ? v.join("|") : (v === undefined ? "" : (typeof v === "string" ? v.trim() : v)); }));
       o.logged_checked = trialRows.filter(r => r.opened_any).length; Q = o; log("questionnaire_submit"); screenDebrief();
     });
   }
@@ -227,12 +261,13 @@
     const rows = trialRows.slice().sort((a, b) => a.trial_index - b.trial_index).map(r => { const it = byId[r.item];
       return '<tr><td>' + r.trial_index + '</td><td>' + esc(it.question) + '</td><td>' + (it.key === "yes" ? "Yes" : "No") + '</td><td>' + (r.supported ? "correct" : "wrong") + '</td><td class="' + (r.correct ? "tagok" : "tagno") + '">' + (r.correct ? "right" : "not right") + '</td></tr>'; }).join("");
     h('<div class="card"><h1>Thank you</h1><p id="status" class="muted">Saving your responses…</p>' +
-      '<p>You judged <b>' + n + ' of ' + trialRows.length + '</b> answers correctly.</p>' +
+      '<p>Your result: <span class="score">' + n + ' of ' + trialRows.length + '</span> answers judged correctly.</p>' +
       '<h2>What this study is about</h2><p>The assistant in this study was simulated. Its answers, its reasoning and the source summaries were prepared in advance, and <b>4 of the 16 answers were deliberately wrong</b>, although the cited sources contained the correct information. The study examines whether people open the cited sources more or less often when an AI assistant shows its reasoning, and whether this changes how often wrong answers are noticed. This was not mentioned at the start because knowing it would have changed how people use the sources.</p>' +
-      '<p>If you would like your data removed, send the code below to the contact address within 14 days.</p><p><b>Your code:</b> <code>' + esc(S.session_id.slice(0, 8)) + '</code></p><p class="muted">Contact: ' + esc(CONFIG.CONTACT) + '</p>' +
+      '<p>If you would like your data removed, send the code below to ' + esc(CONFIG.EMAIL) + ' within 14 days.</p><p><b>Your code:</b> <code>' + esc(S.session_id.slice(0, 8)) + '</code></p>' +
+      '<p>Interested in the results? Write to <a href="mailto:' + esc(CONFIG.EMAIL) + '">' + esc(CONFIG.EMAIL) + '</a> for a summary once the thesis is finished.</p>' +
       '<p>Please do not tell others who might take part what the study is about.</p></div>' +
       '<div class="card"><h2>The correct answers</h2><table class="res"><tr><th>#</th><th>Question</th><th>Correct answer</th><th>The assistant was</th><th>Your decision was</th></tr>' + rows + '</table></div>' +
-      '<div class="card" id="dl" hidden><p>The data could not be sent automatically. Please download the file and send it to the contact address.</p><button class="btn" id="dlb">Download my responses</button></div>');
+      '<div class="card" id="dl" hidden><p>The data could not be sent automatically. Please download the file and send it to ' + esc(CONFIG.EMAIL) + '.</p><button class="btn" id="dlb">Download my responses</button></div>');
     submit();
   }
   function offerDownload(msg) {

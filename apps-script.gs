@@ -18,7 +18,7 @@ const SPREADSHEET_ID = '';   // leave '' when the script is bound to the sheet
 const TRIAL_COLS = ['session_id','list','trial_index','item','trace','supported','key','decision','correct','opened_any',
   'n_sources_distinct','n_source_opens','open_order','source_open_ms','source_visible_ms','max_scroll','decision_changes',
   'first_choice_ms','trial_ms','verification_success'];
-const Q_COLS = ['trust_trace','trust_notrace','self_checked','logged_checked','open_why','open_trace','ai_use','habit_check','age','gender','education','english','lookup'];
+const Q_COLS = ['trust_trace','trust_notrace','self_checked','logged_checked','why_open','why_closed','trace_read','trace_effect','ai_use','habit_check','age','gender','education','english','lookup','comment'];
 const SESSION_COLS = ['received_at','session_id','final','study_version','items_version','list','src','started_at','n_trials_done','window','user_agent'].concat(Q_COLS).concat(['raw_json']);
 const EVENT_COLS = ['session_id','seq','t','wall','trial','item','type','visible','payload_json'];
 const ITEM_COLS = ['saved_at','version','note','n_chunks'];

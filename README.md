@@ -13,7 +13,8 @@ own sources. Opening sources is optional and every interaction is logged. Hostin
 | `admin.html`, `admin.js`, `admin.css` | Admin page: progress, responses and event logs, editor for questions and sources, open/close the study |
 | `items.js` | Bundled item set (16 items and a practice item). Used until an item set is saved from the admin page |
 | `design.js`, `test_design.js` | List rotation, trial order, item validation. `node test_design.js` checks the balance |
-| `config.js` | Data endpoint URL and contact line |
+| `config.js` | Data endpoint URL, researcher name, contact e-mail, logo switch |
+| `assets/hnu-logo.png` | University logo from the HNU thesis template (shown when `SHOW_LOGO` is true) |
 | `apps-script.gs` | Data endpoint and admin backend (Google Apps Script bound to a Google Sheet) |
 | `analysis.R` | Models for H1 to H3, carryover check, say-versus-click comparison |
 
@@ -41,7 +42,7 @@ works locally on the bundled items.
 5. **Deploy > New deployment > Web app.** Execute as: **Me**. Who has access: **Anyone**. Deploy and copy
    the web-app URL that ends in `/exec`. *Why "Anyone":* participants are not signed in to Google; the
    script accepts only the requests it knows, and admin requests need the key.
-6. Put the URL into `ENDPOINT_URL` in `config.js` and your contact line into `CONTACT`, commit and push.
+6. Put the URL into `ENDPOINT_URL` in `config.js`, commit and push.
 7. Open the study once and finish it. The last page must say "Your responses have been saved", and the
    session must appear in the admin page under *Responses*. Delete the test rows from the sheet afterwards.
 
@@ -56,6 +57,22 @@ Study: `https://0-uddeshya-0.github.io/say-vs-click/` · Admin: `…/say-vs-clic
 Add `?src=hnu`, `?src=surveycircle`, `?src=linkedin` and so on to the link posted in each place.
 The value is stored with the session, and the admin overview counts completions per channel.
 `?list=3&reset=1` forces list 3 and a fresh session (for testing).
+
+## Showing the study to the supervisor
+
+1. **Participant view:** open `https://0-uddeshya-0.github.io/say-vs-click/?reset=1&src=demo` and go through
+   consent, the practice question and two or three questions. Open a source on one of them. `?reset=1`
+   starts a fresh session every time, and `src=demo` marks the session so it can be removed from the data.
+2. **What is recorded:** open `admin.html`, sign in, go to *Responses* and click the demo session. The trial
+   table and the event log show the source that was just opened, with its timings.
+3. **Materials:** in *Questions and sources*, pick an item and press *Preview this item* to show the supported
+   and the unsupported version next to each other, with the trace and the three sources.
+4. **Design safeguards:** change a correct answer from yes to no in the editor and show that saving is blocked.
+   Reload the page to discard the change.
+5. **Progress view:** the *Overview* shows the target, the eight lists and the questionnaire answers.
+
+Before the endpoint is connected, steps 1, 3 and 4 work as they are; step 2 works with the response file
+that the study offers as a download at the end (*Open response file(s)* in the admin page).
 
 ## Admin page
 
@@ -72,10 +89,16 @@ The value is stored with the session, and the admin overview counts completions 
 
 Per trial (`trials`): item, trace shown, supported or not, decision, correct, whether any source was opened,
 number and order of sources, time sources were open and visible, scroll depth, decision changes, time to
-first choice, trial time, verification success. Per event (`events`): every source open and close, decision
+first choice, trial time, verification success. The final questionnaire is closed throughout (scales and
+multiple choice on three short pages; one optional comment field). Per event (`events`): every source open and close, decision
 click, screen change, tab switch and window blur with a millisecond timestamp. Sessions that leave early
 are stored in `sessions` with `final = FALSE`. A reload resumes at the next question; a browser that has
 finished is not admitted a second time. No names, e-mail addresses or IP addresses are stored.
+
+## Logo
+
+The header shows the HNU logo taken unchanged from the university's thesis template. Its use on a public
+study page should be cleared with the supervisor; `SHOW_LOGO: false` in `config.js` removes it.
 
 ## Known limits
 

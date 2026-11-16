@@ -8,8 +8,12 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header><span>Research study, Hochschule Neu-Ulm</span><span id="progress"></span></header>
+<header class="top">
+  <div class="brand"><img id="logo" src="assets/hnu-logo.png" alt="Hochschule Neu-Ulm" hidden><span>Research study</span></div>
+  <div class="prog"><span id="progress"></span><div id="bar" class="bar" hidden><i id="barfill"></i></div></div>
+</header>
 <main id="app"></main>
+<footer class="foot">Master’s thesis study · Hochschule Neu-Ulm · <a id="mail" href="#"></a></footer>
 
 <div id="reader" class="reader" hidden>
   <div class="reader-box" role="dialog" aria-modal="true" aria-labelledby="reader-title">
@@ -20,6 +24,7 @@
 </div>
 
 <script src="config.js"></script>
+<script>document.getElementById("logo").hidden = !CONFIG.SHOW_LOGO; (function (m) { m.textContent = CONFIG.EMAIL; m.href = "mailto:" + CONFIG.EMAIL; })(document.getElementById("mail"));</script>
 <script src="items.js"></script>
 <script src="design.js"></script>
 <script src="app.js"></script>

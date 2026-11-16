@@ -23,6 +23,18 @@
     const cell = v => { v = v === null || v === undefined ? "" : String(v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
     return [cols.join(",")].concat(rows.map(r => cols.map(c => cell(r[c])).join(","))).join("\r\n");
   }
+  const LABELS = {
+    why_open: { unsure: "Unsure whether the answer was correct", surprised: "Answer was surprising", trace_doubt: "Reasoning did not convince", trace_pointer: "Reasoning showed what to check", no_trace: "No reasoning shown, wanted evidence", be_sure: "Wanted to be sure", curious: "Curiosity", none: "Opened no source" },
+    why_closed: { knew: "Already knew the answer", plausible: "Answer sounded plausible", trace_convinced: "Reasoning convinced", trace_instead: "Checked the reasoning instead", effort: "Too much time", trust_ai: "Trusts AI assistants", unnoticed: "Did not notice the sources", always: "Opened a source every time" },
+    trace_read: { never: "Never", few: "On a few questions", most: "On most questions", all: "On every question" },
+    trace_effect: { accept: "More willing to accept", critical: "More critical", none: "No difference", mixed: "Differed by question" } };
+  const TARGET = 70;
+  function bars(title, field, rows, alt) {
+    const c = {}; Object.keys(LABELS[field]).forEach(k => c[k] = 0);
+    rows.forEach(r => String(r[field] || "").split("|").filter(Boolean).forEach(k => { if (c[k] !== undefined) c[k]++; }));
+    const max = Math.max(1, ...Object.values(c));
+    return '<div><h2 style="margin-top:0">' + title + '</h2><div class="bars">' + Object.keys(c).map(k => '<span>' + LABELS[field][k] + '</span><span><div class="b' + (alt ? " alt" : "") + '" style="width:' + Math.round(100 * c[k] / max) + '%"></div></span><span class="n">' + c[k] + '</span>').join("") + '</div></div>';
+  }
   const truthy = v => v === true || String(v).toLowerCase() === "true" || v === 1 || v === "1";
 
   // ------------------------------------------------------------ sign-in
@@ -87,10 +99,13 @@
       '<div class="row">' + (REMOTE ? '<button class="btn" id="refresh">Refresh</button><span>Study is <b class="' + (D.open ? "ok" : "bad") + '">' + (D.open ? "open" : "closed") + '</b></span><button class="btn" id="toggle">' + (D.open ? "Close the study" : "Open the study") + '</button>' : localFileButton() + '<span class="muted">Local mode: open the response files that the study offers as a download in preview mode.</span>') + '</div>' +
       '<div class="grid"><div class="card"><div class="stat">' + (D.nStarted === null ? "–" : D.nStarted) + '<small>started (passed consent)</small></div></div><div class="card"><div class="stat">' + fin.length + '<small>completed</small></div></div>' +
       '<div class="card"><div class="stat">' + Object.keys(partial).length + '<small>left early (partial data stored)</small></div></div><div class="card"><div class="stat">' + (med === null ? "–" : med + " min") + '<small>median time on the 16 questions</small></div></div></div>' +
+      '<div class="card"><h2 style="margin-top:0">Progress to the target of ' + TARGET + ' completed sessions</h2><div class="goal"><i style="width:' + Math.min(100, Math.round(100 * fin.length / TARGET)) + '%"></i></div><p class="muted">' + fin.length + ' of ' + TARGET + ' (' + Math.round(100 * fin.length / TARGET) + '%)</p></div>' +
       '<div class="card"><h2 style="margin-top:0">Completed sessions per list</h2><p class="muted">The eight lists should fill evenly. The endpoint hands them out in rotation.</p><div class="row">' +
       [0, 1, 2, 3, 4, 5, 6, 7].map(l => '<span class="pill">List ' + l + ': <b>' + (lists[l] || 0) + '</b></span>').join("") + '</div>' +
       '<h2>Per recruitment channel (?src=)</h2><div class="row">' + (Object.keys(srcs).map(k => '<span class="pill">' + esc(k) + ': <b>' + srcs[k] + '</b></span>').join("") || '<span class="muted">No completed sessions yet.</span>') + '</div>' +
       '<h2>Item set versions in the data</h2><div class="row">' + (Object.keys(vers).map(k => '<span class="pill">' + esc(k) + ': <b>' + vers[k] + '</b></span>').join("") || '<span class="muted">–</span>') + '</div></div>' +
+      '<div class="card"><div class="halves">' + bars("Why sources were opened", "why_open", fin) + bars("Why sources stayed closed", "why_closed", fin, true) + '</div>' +
+      '<div class="halves" style="margin-top:22px">' + bars("How often the reasoning was read", "trace_read", fin) + bars("Stated effect of the reasoning", "trace_effect", fin, true) + '</div><p class="muted" style="margin-top:12px">Answers from the final questionnaire, completed sessions only. Several reasons can be selected.</p></div>' +
       '<div class="card"><h2 style="margin-top:0">Outcomes by condition</h2><div class="warn">Monitoring only. Deciding when to stop collecting on the basis of these figures inflates the error rate of the hypothesis tests. Fix the stopping rule (target sample or end date) before looking.</div>' +
       '<button class="btn" id="reveal">Show the figures</button><div id="outc" hidden><div class="scroll"><table class="data"><tr><th>Condition</th><th>Trials</th><th>Source opened</th><th>Decision correct</th><th>Unsupported trials</th><th>Rejected</th><th>Verification success</th></tr>' + cond(1) + cond(0) + '</table></div>' +
       '<p style="margin-top:12px">Say versus click: participants reported opening a source on <b>' + mean("self_checked") + '</b> of 16 questions on average; the log shows <b>' + mean("logged_checked") + '</b>.</p></div></div>';
@@ -121,12 +136,14 @@
     $$("tr.click").forEach(tr => tr.addEventListener("click", () => sessionDetail(S[+tr.dataset.i])));
     bindLocalFile(renderResponses);
   }
+  const lab = (f, v) => String(v || "").split("|").filter(Boolean).map(k => '<span class="pill">' + esc(LABELS[f][k] || k) + '</span>').join(" ");
   function sessionDetail(s) {
     const T = (D.trials || []).filter(t => t.session_id === s.session_id).sort((a, b) => a.trial_index - b.trial_index);
     const tc = ["trial_index", "item", "trace", "supported", "decision", "correct", "opened_any", "n_sources_distinct", "open_order", "source_visible_ms", "max_scroll", "decision_changes", "trial_ms", "verification_success"];
     const box = $("#detail");
     box.innerHTML = '<div class="card"><h2 style="margin-top:0">Session ' + esc(String(s.session_id).slice(0, 8)) + '</h2>' +
-      '<p><b>Why sources were opened or not:</b> ' + (esc(s.open_why) || '<span class="muted">(no answer)</span>') + '<br><b>Effect of the reasoning:</b> ' + (esc(s.open_trace) || '<span class="muted">(no answer)</span>') + '</p>' +
+      '<p><b>Opened sources because:</b> ' + (lab("why_open", s.why_open) || '<span class="muted">\u2013</span>') + '<br><b>Left sources closed because:</b> ' + (lab("why_closed", s.why_closed) || '<span class="muted">\u2013</span>') +
+      '<br><b>Read the reasoning:</b> ' + lab("trace_read", s.trace_read) + ' \u00b7 <b>Its effect:</b> ' + lab("trace_effect", s.trace_effect) + (s.comment ? '<br><b>Comment:</b> ' + esc(s.comment) : "") + '</p>' +
       '<p class="muted">AI use: ' + esc(s.ai_use) + ' · habit: ' + esc(s.habit_check) + ' · age: ' + esc(s.age) + ' · gender: ' + esc(s.gender) + ' · education: ' + esc(s.education) + ' · English: ' + esc(s.english) + '</p>' +
       '<h2>Trials</h2><div class="scroll"><table class="data"><tr>' + tc.map(c => '<th>' + c + '</th>').join("") + '</tr>' + T.map(t => '<tr>' + tc.map(c => '<td>' + esc(t[c]) + '</td>').join("") + '</tr>').join("") + '</table></div>' +
       '<h2>Event log</h2><div id="ev" class="scroll"><p class="muted">Loading…</p></div></div>';
