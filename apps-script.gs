@@ -28,7 +28,7 @@ const SESSION_COLS = ['received_at','session_id','final','study_version','items_
 const EVENT_COLS = ['session_id','seq','t','wall','trial','item','type','visible','payload_json'];
 // Columns that hold text. They are formatted as plain text before writing, so that the sheet stores "18-24", "1/2",
 // a time stamp or a comment starting with "=" exactly as received and does not turn it into a date, a number or a formula.
-const TEXT_COLS = ['received_at','session_id','study_version','items_version','src','started_at','lang','lang_start','lang_browser','window','user_agent',
+const TEXT_COLS = ['received_at','session_id','final','study_version','items_version','src','started_at','lang','lang_start','lang_browser','window','user_agent',
   'why_open','why_closed','trace_read','trace_effect','ai_use','habit_check','age','gender','education','english','lookup','comment','raw_json',
   'item','key','decision','open_order','link_order','content_lang','wall','type','payload_json'];
 const MAX_POST = 300000;     // characters; a complete record with all events is about 100,000 at most
@@ -39,7 +39,7 @@ function doGet(e) {
   try {
     var action = (e && e.parameter && e.parameter.action) || '';
     if (action === 'start') return out_(start_());
-    return out_({ ok: true, service: 'study endpoint', api: 5 });
+    return out_({ ok: true, service: 'study endpoint', api: 6 });
   } catch (err) { return out_({ ok: false, error: String(err) }); }
 }
 
@@ -82,7 +82,7 @@ function submit_(data) {
     if (row && String(sessions.getRange(row, 3).getValue()).toLowerCase() === 'true') return { ok: true, duplicate: true };   // a retried or late submission is stored once
     var raw = JSON.stringify({ meta: m, questionnaire: q, trials: data.trials || [] });   // the events have their own sheet; a cell holds at most 50,000 characters
     if (raw.length > CHUNK) raw = raw.slice(0, CHUNK);
-    var vals = [new Date().toISOString(), m.session_id, false, m.study_version, m.items_version, m.list, m.src, m.started_at, m.n_trials_done]   // the final flag is set last, when everything else is stored
+    var vals = [new Date().toISOString(), m.session_id, 'FALSE', m.study_version, m.items_version, m.list, m.src, m.started_at, m.n_trials_done]   // the final flag is set last, when everything else is stored
       .concat(SUM_COLS.map(function (k) { return m[k] === undefined || m[k] === null ? '' : m[k]; })).concat([m.window, m.user_agent])
       .concat(Q_COLS.map(function (k) { return q[k] === undefined || q[k] === null ? '' : q[k]; }))
       .concat([raw]);
@@ -95,7 +95,8 @@ function submit_(data) {
       put_(ev, ev.getLastRow() + 1, (data.events || []).map(function (e2) {
         return [m.session_id, e2.seq, e2.t, e2.wall, e2.trial === null ? '' : e2.trial, e2.item || '', e2.type, e2.visible, e2.payload ? JSON.stringify(e2.payload) : '']; }), EVENT_COLS);
       deleteRows_(part, m.session_id, 1);                // the complete record replaces the partial one
-      sessions.getRange(row, 3).setValue(true);
+      sessions.getRange(row, 3).setNumberFormat('@').setValue('TRUE');   // the final flag is stored as the text TRUE / FALSE, whatever format the sheet has
+      SpreadsheetApp.flush();
     } else {
       deleteRows_(part, m.session_id, 1);                // a partial record is rewritten on every partial submission
       put_(part, part.getLastRow() + 1, trialRows, TRIAL_COLS);
@@ -190,8 +191,11 @@ function put_(sh, start, rows, cols) {
     sh.getRange(start, i + 1, n, j - i + 1).setNumberFormat('@');
     i = j + 1;
   }
-  sh.getRange(start, 1, n, cols.length).setValues(rows.map(function (r) { return r.map(function (v, k) { return isText[k] ? (v === null || v === undefined ? '' : String(v)) : safe_(v); }); }));
+  sh.getRange(start, 1, n, cols.length).setValues(rows.map(function (r) { return r.map(function (v, k) { return isText[k] ? (v === null || v === undefined ? '' : guard_(String(v))) : safe_(v); }); }));
+  SpreadsheetApp.flush();
 }
+/** Text that begins with = + - or @ is stored with one leading space: setValues reads a leading "=" as a formula even in a plain-text cell. */
+function guard_(v) { return /^[=+\-@]/.test(v) ? ' ' + v : v; }
 /** In a column that is not text, a string must still never be read as a formula. */
 function safe_(v) { return (typeof v === 'string' && /^[=+\-@]/.test(v)) ? "'" + v : v; }
 function out_(o) { return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON); }
@@ -199,35 +203,51 @@ function out_(o) { return ContentService.createTextOutput(JSON.stringify(o)).set
 /**
  * Run once from the editor (Run > selfTest) after pasting the script. It writes a partial record, the final record and a
  * repeated final record under a test session id, reads the cells back, deletes the test rows and logs the result.
- * Every value in the log must read true; the last line says whether the test passed.
+ * Every line must end in true. A line that ends in false also shows what the sheet returned, so that the cause can be read from the log.
  */
 function selfTest() {
-  var id = 'selftest-' + Date.now(), ss = ss_(), log = [];
-  var q = { age: '18-24', comment: '=1+1', why_open: 'a|b', trust_trace: 4 };
-  var t = { session_id: id, list: 0, trial_index: 1, item: 'x', decision: 'accept', link_order: '1', lang: 'en' };
-  var meta = { session_id: id, final: false, study_version: 'selftest', list: 0, n_trials_done: 1, started_at: '2026-01-02T03:04:05.000Z', src: '1/2', n_events: 1 };
-  var r1 = submit_({ meta: meta, trials: [t], events: [], questionnaire: q });
-  var sh = ss.getSheetByName('sessions'), row = findRow_(sh, id), cells = row ? sh.getRange(row, 1, 1, SESSION_COLS.length).getValues()[0] : [];
-  var cell = function (name) { return cells[SESSION_COLS.indexOf(name)]; };
-  log.push('partial stored: ' + (r1.ok === true && row > 0 && cell('final') === false));
-  log.push('partial trials stored: ' + (ss.getSheetByName('trials_partial').getLastRow() > 1));
-  meta.final = true;
-  var r2 = submit_({ meta: meta, trials: [t], events: [{ seq: 1, t: 0, wall: '2026-01-02T03:04:06.000Z', trial: null, item: null, type: 'selftest', visible: true, payload: null }], questionnaire: q });
-  cells = sh.getRange(row, 1, 1, SESSION_COLS.length).getValues()[0];
-  log.push('final stored: ' + (r2.ok === true && cell('final') === true));
-  log.push('text cells keep their text (18-24, =1+1, 1/2, a time stamp): ' + (cell('age') === '18-24' && cell('comment') === '=1+1' && cell('src') === '1/2' && cell('started_at') === '2026-01-02T03:04:05.000Z'));
-  log.push('numbers stay numbers: ' + (cell('trust_trace') === 4));
-  log.push('partial trials removed, final trials stored: ' + (countRows_(ss.getSheetByName('trials_partial'), id) === 0 && countRows_(ss.getSheetByName('trials'), id) === 1 && countRows_(ss.getSheetByName('events'), id) === 1));
-  var r3 = submit_({ meta: meta, trials: [t], events: [], questionnaire: q });
-  log.push('repeated final says duplicate: ' + (r3.ok === true && r3.duplicate === true));
-  var k = props_().getProperty('ADMIN_KEY');
-  log.push('admin key set (12+ characters): ' + (!!k && k.length >= 12));
-  deleteRows_(sh, id, 2);
-  ['trials', 'trials_partial', 'events'].forEach(function (n) { deleteRows_(ss.getSheetByName(n), id, 1); });
-  log.push('test rows deleted: ' + (findRow_(sh, id) === 0));
-  Logger.log(log.join('\n'));
-  Logger.log(log.every(function (l) { return /true$/.test(l); }) ? 'SELF TEST PASSED' : 'SELF TEST FAILED - see the lines above');
+  var id = 'selftest-' + Date.now(), ss = ss_(), res = [], sh = null, row = 0;
+  var show = function (v) { return JSON.stringify(v) + ' (' + typeof v + ')'; };
+  var flag = function (v) { return String(v).toLowerCase(); };
+  var check = function (name, ok, got) { res.push(name + ': ' + (ok === true ? 'true' : 'false  <- read back: ' + got)); };
+  try {
+    var q = { age: '18-24', comment: '=1+1', why_open: 'a|b', trust_trace: 4 };
+    var t = { session_id: id, list: 0, trial_index: 1, item: 'x', decision: 'accept', link_order: '1', lang: 'en' };
+    var meta = { session_id: id, final: false, study_version: 'selftest', list: 0, n_trials_done: 1, started_at: '2026-01-02T03:04:05.000Z', src: '1/2', n_events: 1 };
+    var r1 = submit_({ meta: meta, trials: [t], events: [], questionnaire: q });
+    sh = ss.getSheetByName('sessions'); row = findRow_(sh, id);
+    var cells = row ? sh.getRange(row, 1, 1, SESSION_COLS.length).getValues()[0] : [];
+    var cell = function (name) { return cells[SESSION_COLS.indexOf(name)]; };
+    check('partial record stored with final = FALSE', r1.ok === true && row > 0 && flag(cell('final')) === 'false', JSON.stringify(r1) + ', row ' + row + ', final ' + show(cell('final')));
+    check('partial trials stored', ss.getSheetByName('trials_partial').getLastRow() > 1, 'trials_partial has ' + ss.getSheetByName('trials_partial').getLastRow() + ' rows');
+    meta.final = true;
+    var r2 = submit_({ meta: meta, trials: [t], events: [{ seq: 1, t: 0, wall: '2026-01-02T03:04:06.000Z', trial: null, item: null, type: 'selftest', visible: true, payload: null }], questionnaire: q });
+    cells = sh.getRange(row, 1, 1, SESSION_COLS.length).getValues()[0];
+    check('final record stored with final = TRUE', r2.ok === true && flag(cell('final')) === 'true', JSON.stringify(r2) + ', final ' + show(cell('final')));
+    check('text cell 18-24 stays text', cell('age') === '18-24', show(cell('age')) + ', number format ' + formatOf_(sh, row, SESSION_COLS.indexOf('age') + 1));
+    check('text cell =1+1 stays text (stored with one leading space)', String(cell('comment')).trim() === '=1+1', show(cell('comment')));
+    check('text cell 1/2 stays text', cell('src') === '1/2', show(cell('src')));
+    check('time stamp stays text', cell('started_at') === '2026-01-02T03:04:05.000Z', show(cell('started_at')));
+    check('numbers stay numbers', cell('trust_trace') === 4, show(cell('trust_trace')));
+    var nPart = countRows_(ss.getSheetByName('trials_partial'), id), nTr = countRows_(ss.getSheetByName('trials'), id), nEv = countRows_(ss.getSheetByName('events'), id);
+    check('partial trials removed, final trials and events stored', nPart === 0 && nTr === 1 && nEv === 1, 'trials_partial ' + nPart + ', trials ' + nTr + ', events ' + nEv);
+    var r3 = submit_({ meta: meta, trials: [t], events: [], questionnaire: q });
+    check('repeated final record is reported as duplicate', r3.ok === true && r3.duplicate === true, JSON.stringify(r3));
+    var k = props_().getProperty('ADMIN_KEY');
+    check('admin key set (12+ characters)', !!k && k.length >= 12, k ? 'length ' + k.length : 'not set');
+  } catch (err) {
+    res.push('error during the test: false  <- ' + err);
+  } finally {
+    try {
+      if (sh) deleteRows_(sh, id, 2);
+      ['trials', 'trials_partial', 'events'].forEach(function (n) { var x = ss.getSheetByName(n); if (x) deleteRows_(x, id, 1); });
+      check('test rows deleted', !sh || findRow_(sh, id) === 0, 'rows left');
+    } catch (err2) { res.push('clean-up: false  <- ' + err2); }
+  }
+  Logger.log(res.join('\n'));
+  Logger.log(res.every(function (l) { return /: true$/.test(l); }) ? 'SELF TEST PASSED' : 'SELF TEST FAILED - see the lines that end in false');
 }
+function formatOf_(sh, row, col) { try { return sh.getRange(row, col).getNumberFormat(); } catch (e) { return 'unknown'; } }
 function countRows_(sh, id) {
   if (sh.getLastRow() < 2) return 0;
   return sh.getRange(2, 1, sh.getLastRow() - 1, 1).getValues().filter(function (r) { return String(r[0]) === String(id); }).length;

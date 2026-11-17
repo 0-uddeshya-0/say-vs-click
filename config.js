@@ -9,7 +9,7 @@
  *   MIN_WIDTH      Minimum window width in pixels (phones are turned away).
  */
 const CONFIG = {
-  ENDPOINT_URL: "",
+  ENDPOINT_URL: "https://script.google.com/macros/s/AKfycbwa3h1yjsMKIgUfV0SqqofQBoUASGQgcKvmrSInK6XFwYGeeyr3swBz0u2q4RmFO-3r-w/exec",
   RESEARCHER: "Uddeshya Singh",
   EMAIL: "uddeshya.singh@student.hnu.de",
   SHOW_LOGO: true,

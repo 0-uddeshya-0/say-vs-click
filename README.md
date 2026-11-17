@@ -40,11 +40,13 @@ works locally on the bundled items.
    value a passphrase of at least 12 characters. *Why:* the admin page signs in with it.
 4. Back in the editor choose the function `selfTest` and press **Run**. Google asks for permission
    once (Advanced > Go to project > Allow). *Why:* the script needs your consent to write to your sheet.
-   The log must end with `SELF TEST PASSED`. The test writes a partial and a final record under a session id that starts with `selftest-`, reads the cells back (text such as `18-24` and `=1+1` must stay text), and deletes its rows again. Any line that ends in `false` names the failed check.
+   The log must end with `SELF TEST PASSED`. The test writes a partial and a final record under a session id that starts with `selftest-`, reads the cells back (text such as `18-24`, `1/2` and a time stamp must stay text, `=1+1` must not become a formula), and deletes its rows again. A line that ends in `false` also shows the value the sheet returned. Do not format the sheets yourself: the script creates `sessions`, `trials`, `trials_partial`, `events` and `items` with the right formats; a sheet that was formatted by hand should be deleted first.
 5. **Deploy > New deployment > Web app.** Execute as: **Me**. Who has access: **Anyone**. Deploy and copy
    the web-app URL that ends in `/exec`. *Why "Anyone":* participants are not signed in to Google; the
    script accepts only the requests it knows, and admin requests need the key.
-6. Put the URL into `ENDPOINT_URL` in `config.js`, commit and push.
+6. Open the URL in a browser. It must show `"api":6`. A lower number means that an older script is still deployed
+   (a pasted script does not go live until a new version is deployed, see the last paragraph of this section).
+   Then put the URL into `ENDPOINT_URL` in `config.js`, commit and push.
 7. Open the study once and finish it. The last page must say "Your responses have been saved", and the
    session must appear in the admin page under *Responses*. Delete the test rows from the sheet afterwards.
 
@@ -111,7 +113,7 @@ A participant who leaves early (closes the page after at least one answered ques
 `sessions` with `final = FALSE` and the finished questions in `trials_partial`. If the same browser later
 finishes the study, the final record replaces the partial one. A reload resumes at the current question
 (a restarted question is counted in `restarts`). A browser that has finished is not admitted a second time. Only
-rows with `final = TRUE` belong in the analysis; the sheet `trials` contains the finished sessions only.
+rows with `final = TRUE` belong in the analysis; the sheet `trials` contains the finished sessions only. The column `final` holds the text TRUE or FALSE. An optional comment that begins with `=`, `+`, `-` or `@` is stored with one leading space, so that no sheet can read it as a formula.
 If the final save fails, the finished record stays in the browser, is offered as a download and is sent again
 at the next visit.
 
