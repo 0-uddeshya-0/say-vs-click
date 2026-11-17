@@ -11,7 +11,9 @@ own sources. Opening sources is optional and every interaction is logged. Hostin
 |---|---|
 | `index.html`, `app.js`, `styles.css` | The study: consent, instructions, practice, 16 trials, questionnaire, debriefing |
 | `admin.html`, `admin.js`, `admin.css` | Admin page: progress, responses and event logs, editor for questions and sources, open/close the study |
-| `items.js` | Bundled item set (16 items and a practice item). Used until an item set is saved from the admin page |
+| `items.js` | Bundled item set (16 items and a practice item, English and German). Generated file, used until an item set is saved from the admin page |
+| `i18n.js` | All interface texts, the consent and debriefing texts and the questionnaire, English and German |
+| `tools/items.json`, `tools/build_items.py` | Source of the item set. `python3 tools/build_items.py` rewrites `items.js` from `tools/items.json` and fails if a file is malformed |
 | `design.js`, `test_design.js` | List rotation, trial order, item validation. `node test_design.js` checks the balance |
 | `config.js` | Data endpoint URL, researcher name, contact e-mail, logo switch |
 | `assets/hnu-logo.png` | University logo from the HNU thesis template (shown when `SHOW_LOGO` is true) |
@@ -38,13 +40,15 @@ works locally on the bundled items.
    value a passphrase of at least 12 characters. *Why:* the admin page signs in with it.
 4. Back in the editor choose the function `selfTest` and press **Run**. Google asks for permission
    once (Advanced > Go to project > Allow). *Why:* the script needs your consent to write to your sheet.
-   The log must show `submit: {"ok":true}` and `admin key set: true`.
+   The log must end with `SELF TEST PASSED`. The test writes a partial and a final record under a session id that starts with `selftest-`, reads the cells back (text such as `18-24` and `=1+1` must stay text), and deletes its rows again. Any line that ends in `false` names the failed check.
 5. **Deploy > New deployment > Web app.** Execute as: **Me**. Who has access: **Anyone**. Deploy and copy
    the web-app URL that ends in `/exec`. *Why "Anyone":* participants are not signed in to Google; the
    script accepts only the requests it knows, and admin requests need the key.
 6. Put the URL into `ENDPOINT_URL` in `config.js`, commit and push.
 7. Open the study once and finish it. The last page must say "Your responses have been saved", and the
    session must appear in the admin page under *Responses*. Delete the test rows from the sheet afterwards.
+
+The script creates the sheets `sessions`, `trials`, `trials_partial`, `events` and `items` itself. It refuses to write into a sheet whose first row differs from the columns it expects (error text: "The header of the sheet … does not match this script version"). This happens when sheets of an older script version already exist; rename or delete them and run `selfTest` again. A new script version needs a new deployment (next paragraph).
 
 After changing `apps-script.gs` later: Deploy > Manage deployments > Edit > Version: New version.
 The URL stays the same.
@@ -56,7 +60,7 @@ Study: `https://0-uddeshya-0.github.io/say-vs-click/` · Admin: `…/say-vs-clic
 
 Add `?src=hnu`, `?src=surveycircle`, `?src=linkedin` and so on to the link posted in each place.
 The value is stored with the session, and the admin overview counts completions per channel.
-`?list=3&reset=1` forces list 3 and a fresh session (for testing).
+`?list=3&reset=1` forces list 3 and a fresh session (for testing). The language follows the browser (German for German browsers, otherwise English) and can be switched at any time in the header. `?lang=de` or `?lang=en` forces a language for that visit.
 
 ## Showing the study to the supervisor
 
@@ -80,20 +84,36 @@ that the study offers as a download at the end (*Open response file(s)* in the a
   Outcomes by condition are hidden behind a button, because looking at them to decide when to stop
   collecting would bias the tests.
 - **Responses:** every session; click one for its 16 trials and the full event log. CSV downloads.
-- **Questions and sources:** edit question, both answers, both traces and the three sources of each item;
-  preview; save. Saving stores a new version at the endpoint, and new participants receive it at once.
+- **Questions and sources:** edit question, both answers, both traces and the three sources of each item, in English and in German;
+  preview; save. The practice item is validated together with the 16 items. Saving stores a new version at the endpoint, and new participants receive it at once.
   The editor refuses a set that would unbalance the design (16 items, four groups, two yes and two no each,
-  answers beginning with Yes or No). Every session records the item-set version it used.
+  answers beginning with Yes/No or Ja/Nein, equal number of trace steps in both languages, every link beginning with https://). Every session records the item-set version it used.
 
 ## What is logged
 
 Per trial (`trials`): item, trace shown, supported or not, decision, correct, whether any source was opened,
 number and order of sources, time sources were open and visible, scroll depth, decision changes, time to
-first choice, trial time, verification success. The final questionnaire is closed throughout (scales and
-multiple choice on three short pages; one optional comment field). Per event (`events`): every source open and close, decision
-click, screen change, tab switch and window blur with a millisecond timestamp. Sessions that leave early
-are stored in `sessions` with `final = FALSE`. A reload resumes at the next question; a browser that has
-finished is not admitted a second time. No names, e-mail addresses or IP addresses are stored.
+first choice, trial time, verification success, the language at the start and end of the trial and the language
+of the texts shown (`lang_start`, `lang`, `content_lang`), how often the question was restarted after a reload
+(`restarts`), clicks on the link to the full Wikipedia article (`n_link_clicks`, `n_link_menu` for right-click
+or context-menu use, `link_order`), and the time the study page was in the background (`away_ms`, `n_away`;
+`link_away_ms` for the time away right after a click on the article link).
+Per event (`events`): every source open and close, decision click, screen change, language switch, link click,
+tab switch and window blur, with a millisecond timestamp. The final questionnaire is closed throughout (scales
+and multiple choice on three short pages; one optional comment field).
+
+Per session (`sessions`): the totals of the above, the questionnaire answers, the item-set version, the language
+of the browser, the browser identification string and the window size. No names, e-mail addresses or IP
+addresses are stored. What a participant reads inside the Wikipedia article cannot be recorded; the study can
+only see that the link was followed and for how long the study page stayed in the background.
+
+A participant who leaves early (closes the page after at least one answered question) leaves a row in
+`sessions` with `final = FALSE` and the finished questions in `trials_partial`. If the same browser later
+finishes the study, the final record replaces the partial one. A reload resumes at the current question
+(a restarted question is counted in `restarts`). A browser that has finished is not admitted a second time. Only
+rows with `final = TRUE` belong in the analysis; the sheet `trials` contains the finished sessions only.
+If the final save fails, the finished record stays in the browser, is offered as a download and is sent again
+at the next visit.
 
 ## Logo
 
@@ -102,12 +122,17 @@ study page should be cleared with the supervisor; `SHOW_LOGO: false` in `config.
 
 ## Known limits
 
+- German participants who follow the link to a source read the English Wikipedia article; the summaries shown
+  in the study are German. The language of the session is recorded and can be used as a covariate.
 - A static site cannot hide its files. A participant who opens the browser's developer tools can read
   the item set, including the correct answers. The questionnaire asks whether anything was looked up.
 - The endpoint is tested against a local stand-in with the same protocol, not against Google itself;
   step 7 above is the real test.
+- Time away from the page is measured with the browser's visibility and focus events. A headless browser reports
+  almost no away time; the measurement has to be tried once in a normal browser window before data collection.
 
 ## Before collecting data
 
-Second reader checks every item (admin page, *Preview this item*). Pilot with 5 to 8 people. Ethics and
+Second reader checks every item against its sources (admin page, *Preview this item*; the cached article texts are
+the reference for the check). Pilot with 5 to 8 people. Ethics and
 data protection cleared with the supervisor. Item set frozen; commit hash and item-set version noted in the thesis.

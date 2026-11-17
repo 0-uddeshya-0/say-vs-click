@@ -2,6 +2,7 @@
 # the "sessions" sheet exported as sessions.csv.
 library(lme4)
 d <- read.csv("trials.csv"); s <- read.csv("sessions.csv")
+s <- s[!grepl("^selftest-", s$session_id) & !(s$src %in% c("demo", "test")), ]   # test and demonstration sessions are not data
 d <- d[d$session_id %in% s$session_id[s$final == TRUE], ]
 d$trace <- factor(d$trace, levels = c(0, 1), labels = c("no trace", "trace"))
 

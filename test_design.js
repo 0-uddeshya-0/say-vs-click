@@ -1,5 +1,8 @@
 const { ITEMS } = require("./items.js"); const { buildTrials, validateItems } = require("./design.js");
-console.log("validation problems in bundled items:", validateItems(ITEMS));
+console.log("validation problems in bundled items (German required):", validateItems(ITEMS, { requireDe: true }));
+const badDe = JSON.parse(JSON.stringify(ITEMS)); badDe[1].de.answer.s = "Nein. Falsch."; badDe[2].de.trace.u.pop(); delete badDe[4].de; badDe[5].sources[0].url = "http://x";
+console.log("broken German / link is rejected:", validateItems(badDe, { requireDe: true }));
+console.log("every source has a link:", ITEMS.every(i => i.sources.every(s => /^https:\/\/en\.wikipedia\.org\/wiki\//.test(s.url))));
 const bad = JSON.parse(JSON.stringify(ITEMS)); bad[0].key = "no"; bad[3].answer.s = "Maybe."; console.log("deliberately broken set is rejected:", validateItems(bad).length > 0, validateItems(bad));
 let cells = {};
 for (let list = 0; list < 8; list++) for (let seed = 1; seed <= 200; seed++) {
@@ -15,3 +18,10 @@ console.log("items:", Object.keys(per).length, "all four cells for every item:",
 const g = {}; ITEMS.forEach(i => { g[i.group] = (g[i.group] || "") + i.key[0]; }); console.log("groups:", g);
 ITEMS.forEach(i => { const w = i.sources.map(s => s.text.split(/\s+/).length); console.log(i.id.padEnd(10), "source words", w.join("/"), "trace steps", i.trace.s.length, i.trace.u.length,
   "trace words", i.trace.s.join(" ").split(/\s+/).length, i.trace.u.join(" ").split(/\s+/).length); });
+
+// practice item: validated like the others (supported variant only, no group), English and German
+const { PRACTICE } = require("./items.js"); const { validatePractice } = require("./design.js");
+console.log("practice item valid (German required):", validatePractice(PRACTICE, { requireDe: true }));
+const badPr = JSON.parse(JSON.stringify(PRACTICE)); badPr.answer.s = "Maybe."; delete badPr.de; badPr.sources[0].url = "http://x";
+console.log("broken practice item is rejected:", validatePractice(badPr, { requireDe: true }).length > 0, validatePractice(badPr, { requireDe: true }));
+console.log("missing practice item is rejected:", validatePractice(null));

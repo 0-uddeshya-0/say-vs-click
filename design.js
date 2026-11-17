@@ -40,20 +40,17 @@ function buildTrials(items, list, seed) {
   return order.map((t, i) => Object.assign({ index: i + 1 }, t));
 }
 /* Checks an item set against the rules the design depends on. Returns a list of problems (empty = valid). */
-function validateItems(items) {
-  const p = [];
-  if (!Array.isArray(items)) return ["The item set is not a list."];
-  if (items.length !== 16) p.push("There must be exactly 16 items (found " + items.length + ").");
-  const ids = {};
-  items.forEach((it, n) => {
+/* Checks one item (shared by the item set and the practice item, which has only a supported version). Appends problems to p. */
+function checkItem(it, n, p, requireDe, ids, practice) {
+  const variants = practice ? ["s"] : ["s", "u"];
     const tag = "Item " + (n + 1) + (it && it.id ? " (" + it.id + ")" : "") + ": ";
     if (!it || typeof it !== "object") { p.push(tag + "not an object."); return; }
     if (!it.id || !/^[a-z0-9_-]+$/.test(it.id)) p.push(tag + "the id must consist of lower-case letters, digits, - or _.");
     if (ids[it.id]) p.push(tag + "the id is used twice."); ids[it.id] = true;
-    if ([0, 1, 2, 3].indexOf(it.group) < 0) p.push(tag + "the group must be 0, 1, 2 or 3.");
+    if (!practice && [0, 1, 2, 3].indexOf(it.group) < 0) p.push(tag + "the group must be 0, 1, 2 or 3.");
     if (it.key !== "yes" && it.key !== "no") p.push(tag + "the correct answer must be yes or no.");
     if (!it.question || !String(it.question).trim()) p.push(tag + "the question is empty.");
-    ["s", "u"].forEach(v => {
+    variants.forEach(v => {
       const name = v === "s" ? "supported" : "unsupported";
       if (!it.answer || !it.answer[v] || !String(it.answer[v]).trim()) p.push(tag + "the " + name + " answer is empty.");
       else { const says = /^\s*yes\b/i.test(it.answer[v]) ? "yes" : (/^\s*no\b/i.test(it.answer[v]) ? "no" : null);
@@ -64,8 +61,30 @@ function validateItems(items) {
       if (!Array.isArray(tr) || tr.length < 2 || tr.some(x => !String(x).trim())) p.push(tag + "the " + name + " trace needs at least two non-empty steps.");
     });
     if (!Array.isArray(it.sources) || it.sources.length !== 3) p.push(tag + "exactly three sources are required.");
-    else it.sources.forEach((s, k) => { if (!s || !s.title || !s.text || !String(s.title).trim() || !String(s.text).trim()) p.push(tag + "source " + (k + 1) + " needs a title and a text."); });
-  });
+    else it.sources.forEach((s, k) => { if (!s || !s.title || !s.text || !String(s.title).trim() || !String(s.text).trim()) p.push(tag + "source " + (k + 1) + " needs a title and a text.");
+      else if (s.url && !/^https:\/\/[^\s]+$/.test(s.url)) p.push(tag + "the link of source " + (k + 1) + " must begin with https://."); });
+    // German version: optional for the design, required when the study offers German
+    const d = it.de;
+    if (!d) { if (requireDe) p.push(tag + "the German version is missing."); return; }
+    if (!d.question || !String(d.question).trim()) p.push(tag + "the German question is empty.");
+    variants.forEach(v => {
+      const name = v === "s" ? "supported" : "unsupported", a = d.answer && d.answer[v];
+      if (!a || !String(a).trim()) p.push(tag + "the German " + name + " answer is empty.");
+      else { const says = /^\s*ja\b/i.test(a) ? "yes" : (/^\s*nein\b/i.test(a) ? "no" : null), should = v === "s" ? it.key : (it.key === "yes" ? "no" : "yes");
+        if (says === null) p.push(tag + "the German " + name + " answer must begin with Ja or Nein.");
+        else if (says !== should) p.push(tag + "the German " + name + " answer begins with " + (says === "yes" ? "Ja" : "Nein") + " but must begin with " + (should === "yes" ? "Ja" : "Nein") + "."); }
+      const tr = d.trace && d.trace[v], en = it.trace && it.trace[v];
+      if (!Array.isArray(tr) || tr.length < 2 || tr.some(x => !String(x).trim())) p.push(tag + "the German " + name + " trace needs at least two non-empty steps.");
+      else if (Array.isArray(en) && tr.length !== en.length) p.push(tag + "the German " + name + " trace has " + tr.length + " steps, the English one " + en.length + ".");
+    });
+    if (!Array.isArray(d.sources) || d.sources.length !== 3 || d.sources.some(s => !s || !String(s.title || "").trim() || !String(s.text || "").trim())) p.push(tag + "the German version needs a title and a text for each of the three sources.");
+}
+function validateItems(items, opts) {
+  const p = [], requireDe = !!(opts && opts.requireDe);
+  if (!Array.isArray(items)) return ["The item set is not a list."];
+  if (items.length !== 16) p.push("There must be exactly 16 items (found " + items.length + ").");
+  const ids = {};
+  items.forEach((it, n) => checkItem(it, n, p, requireDe, ids));
   for (let g = 0; g < 4; g++) {
     const grp = items.filter(it => it && it.group === g);
     if (grp.length !== 4) p.push("Group " + g + " must contain 4 items (found " + grp.length + ").");
@@ -73,4 +92,11 @@ function validateItems(items) {
   }
   return p;
 }
-if (typeof module !== "undefined") module.exports = { buildTrials, mulberry32, shuffle, validateItems };
+/* Checks the practice item with the same rules as the 16 items. Returns a list of problems (empty = valid). */
+function validatePractice(pr, opts) {
+  const p = [], requireDe = !!(opts && opts.requireDe);
+  if (!pr || typeof pr !== "object") return ["The practice item is missing."];
+  checkItem(pr, 0, p, requireDe, {}, true);
+  return p.map(x => x.replace(/^Item 1/, "Practice item"));
+}
+if (typeof module !== "undefined") module.exports = { buildTrials, mulberry32, shuffle, validateItems, validatePractice };

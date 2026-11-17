@@ -1,0 +1,1332 @@
+{
+ "version": "2026-11-17.3",
+ "items": [
+  {
+   "id": "apollo",
+   "group": 0,
+   "key": "yes",
+   "question": "Was the ship that recovered the Apollo 13 crew named after a World War II battle?",
+   "answer": {
+    "s": "Yes. The crew was picked up by USS Iwo Jima, and the ship was named after the Battle of Iwo Jima of 1945.",
+    "u": "No. The crew was picked up by USS Iwo Jima, which took its name from the island as a place and not from a battle."
+   },
+   "trace": {
+    "s": [
+     "Identify the recovery ship: Apollo 13 splashed down in the South Pacific in April 1970 and the crew was taken aboard USS Iwo Jima.",
+     "Find the origin of the name: the ship was named for the Battle of Iwo Jima.",
+     "Date the battle: it was fought in February and March 1945, during World War II.",
+     "The ship therefore carries the name of a World War II battle."
+    ],
+    "u": [
+     "Identify the recovery ship: Apollo 13 splashed down in the South Pacific in April 1970 and the crew was taken aboard USS Iwo Jima.",
+     "Find the origin of the name: ships of this type were named after Pacific islands, and Iwo Jima is one of them.",
+     "A name taken from a place is not a name taken from a battle.",
+     "The ship was therefore not named after a World War II battle."
+    ]
+   },
+   "sources": [
+    {
+     "title": "USS Iwo Jima (LPH-2)",
+     "origin": "Wikipedia",
+     "text": "USS Iwo Jima (LPH-2) was the lead ship of her class and the first amphibious assault ship designed and built from the keel up as a dedicated helicopter carrier. She was the second of three United States Navy ships named for the Battle of Iwo Jima, but the first of them to be completed and see service. On 17 April 1970 she was the flagship of Task Force 130, which waited for the Apollo 13 astronauts after their splashdown near American Samoa.",
+     "url": "https://en.wikipedia.org/wiki/USS_Iwo_Jima_(LPH-2)"
+    },
+    {
+     "title": "Battle of Iwo Jima",
+     "origin": "Wikipedia",
+     "text": "The Battle of Iwo Jima lasted from 19 February to 26 March 1945. United States Marine Corps and Navy forces landed on the island of Iwo Jima and captured it from the Imperial Japanese Army. The fighting was part of the Pacific campaign of World War II. The American invasion, designated Operation Detachment, had the goal of capturing the island with its two airfields.",
+     "url": "https://en.wikipedia.org/wiki/Battle_of_Iwo_Jima"
+    },
+    {
+     "title": "Apollo 13",
+     "origin": "Wikipedia",
+     "text": "Apollo 13 was launched in April 1970 as the seventh crewed mission of the Apollo programme and would have been the third Moon landing. The landing was aborted after an oxygen tank exploded on the way to the Moon. The crew returned in the command module Odyssey. Radio contact was lost during re-entry for six minutes, longer than had been expected, before the capsule splashed down safely in the South Pacific Ocean southeast of American Samoa, 6.5 kilometres from the recovery ship, USS Iwo Jima.",
+     "url": "https://en.wikipedia.org/wiki/Apollo_13"
+    }
+   ],
+   "de": {
+    "question": "Wurde das Schiff, das die Besatzung von Apollo 13 barg, nach einer Schlacht des Zweiten Weltkriegs benannt?",
+    "answer": {
+     "s": "Ja. Die Besatzung wurde von der USS Iwo Jima aufgenommen, und das Schiff wurde nach der Schlacht um Iwojima von 1945 benannt.",
+     "u": "Nein. Die Besatzung wurde von der USS Iwo Jima aufgenommen, die ihren Namen von der Insel als Ort und nicht von einer Schlacht erhielt."
+    },
+    "trace": {
+     "s": [
+      "Bergungsschiff bestimmen: Apollo 13 wasserte im April 1970 im Südpazifik, und die Besatzung wurde an Bord der USS Iwo Jima genommen.",
+      "Herkunft des Namens klären: Das Schiff wurde nach der Schlacht um Iwojima benannt.",
+      "Schlacht datieren: Sie wurde im Februar und März 1945 geschlagen, also im Zweiten Weltkrieg.",
+      "Das Schiff trägt demnach den Namen einer Schlacht des Zweiten Weltkriegs."
+     ],
+     "u": [
+      "Bergungsschiff bestimmen: Apollo 13 wasserte im April 1970 im Südpazifik, und die Besatzung wurde an Bord der USS Iwo Jima genommen.",
+      "Herkunft des Namens klären: Schiffe dieses Typs wurden nach Pazifikinseln benannt, und Iwojima ist eine davon.",
+      "Eine Benennung nach einem Ort ist keine Benennung nach einer Schlacht.",
+      "Das Schiff wurde demnach nicht nach einer Schlacht des Zweiten Weltkriegs benannt."
+     ]
+    },
+    "sources": [
+     {
+      "title": "USS Iwo Jima (LPH-2)",
+      "text": "Die USS Iwo Jima (LPH-2) war das Typschiff ihrer Klasse und das erste amphibische Angriffsschiff, das von Grund auf als eigener Hubschrauberträger entworfen und gebaut wurde. Sie war das zweite von drei Schiffen der US-Marine, die nach der Schlacht um Iwojima benannt wurden, aber das erste, das fertiggestellt wurde und in Dienst ging. Am 17. April 1970 war sie das Flaggschiff der Task Force 130, die nach der Wasserung nahe Amerikanisch-Samoa auf die Astronauten von Apollo 13 wartete."
+     },
+     {
+      "title": "Schlacht um Iwojima",
+      "text": "Die Schlacht um Iwojima dauerte vom 19. Februar bis zum 26. März 1945. Truppen des United States Marine Corps und der US-Marine landeten auf der Insel Iwojima und eroberten sie von der Kaiserlich Japanischen Armee. Die Kämpfe waren Teil des Pazifikkriegs im Zweiten Weltkrieg. Die amerikanische Invasion, die den Decknamen Operation Detachment trug, hatte das Ziel, die Insel mit ihren beiden Flugplätzen einzunehmen."
+     },
+     {
+      "title": "Apollo 13",
+      "text": "Apollo 13 wurde im April 1970 als siebte bemannte Mission des Apollo-Programms gestartet und wäre die dritte Mondlandung gewesen. Die Landung wurde abgebrochen, nachdem auf dem Weg zum Mond ein Sauerstofftank explodiert war. Die Besatzung kehrte in der Kommandokapsel Odyssey zurück. Beim Wiedereintritt brach der Funkkontakt für sechs Minuten ab, länger als erwartet, bevor die Kapsel sicher im Südpazifik südöstlich von Amerikanisch-Samoa niederging, 6,5 Kilometer vom Bergungsschiff USS Iwo Jima entfernt."
+     }
+    ]
+   }
+  },
+  {
+   "id": "sunbear",
+   "group": 0,
+   "key": "yes",
+   "question": "Do sun bears stay active during the winter months?",
+   "answer": {
+    "s": "Yes. Sun bears live in tropical forests and do not hibernate, so they remain active all year.",
+    "u": "No. Like other bears, sun bears hibernate and spend the winter months in a den."
+   },
+   "trace": {
+    "s": [
+     "Locate the species: sun bears live in the tropical forests of Southeast Asia.",
+     "Check for hibernation: hibernation is a seasonal state of reduced activity, and sun bears are not known to enter it.",
+     "Without hibernation, there is no inactive season.",
+     "Sun bears therefore stay active during the winter months."
+    ],
+    "u": [
+     "Classify the animal: the sun bear belongs to the bear family.",
+     "Recall bear behavior: bears reduce their metabolism and hibernate through the cold season.",
+     "Apply this to the species: as a bear, the sun bear follows the same yearly cycle.",
+     "Sun bears therefore do not stay active during the winter months."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Sun bear",
+     "origin": "Wikipedia",
+     "text": "The sun bear is the smallest bear species. It lives in the tropical forests of Southeast Asia and is an excellent climber, the most arboreal of all bears. Its diet includes insects, honey and plant material such as seeds and fruits. It does not hibernate, possibly because food is available throughout its range all year. It is listed as vulnerable on the IUCN Red List and is threatened by heavy deforestation and poaching.",
+     "url": "https://en.wikipedia.org/wiki/Sun_bear"
+    },
+    {
+     "title": "Hibernation",
+     "origin": "Wikipedia",
+     "text": "Hibernation is a state of minimal activity and metabolic reduction entered by some animal species. It is a seasonal state characterised by low body temperature, slow breathing and heart rate, and a low metabolic rate. It is most commonly used to pass through the winter months. Hibernation functions to conserve energy when sufficient food is not available.",
+     "url": "https://en.wikipedia.org/wiki/Hibernation"
+    },
+    {
+     "title": "Bear",
+     "origin": "Wikipedia",
+     "text": "Bears are carnivoran mammals of the family Ursidae. Only eight species are extant, found on the continents of North America, South America and Eurasia. Bears use shelters such as caves and logs as dens, and most species occupy their dens during the winter for a long period of hibernation of up to 100 days.",
+     "url": "https://en.wikipedia.org/wiki/Bear"
+    }
+   ],
+   "de": {
+    "question": "Bleiben Malaienbären in den Wintermonaten aktiv?",
+    "answer": {
+     "s": "Ja. Malaienbären leben in tropischen Wäldern und halten keinen Winterschlaf, sie bleiben also das ganze Jahr über aktiv.",
+     "u": "Nein. Wie andere Bären halten Malaienbären Winterschlaf und verbringen die Wintermonate in einer Höhle."
+    },
+    "trace": {
+     "s": [
+      "Art verorten: Malaienbären leben in den tropischen Wäldern Südostasiens.",
+      "Winterschlaf prüfen: Winterschlaf ist ein jahreszeitlicher Zustand verminderter Aktivität, und von Malaienbären ist er nicht bekannt.",
+      "Ohne Winterschlaf gibt es keine inaktive Jahreszeit.",
+      "Malaienbären bleiben demnach in den Wintermonaten aktiv."
+     ],
+     "u": [
+      "Tier einordnen: Der Malaienbär gehört zur Familie der Bären.",
+      "Verhalten von Bären heranziehen: Bären senken ihren Stoffwechsel und halten in der kalten Jahreszeit Winterschlaf.",
+      "Auf die Art anwenden: Als Bär folgt der Malaienbär demselben Jahresrhythmus.",
+      "Malaienbären bleiben demnach in den Wintermonaten nicht aktiv."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Malaienbär",
+      "text": "Der Malaienbär ist die kleinste Bärenart. Er lebt in den tropischen Wäldern Südostasiens und ist ein ausgezeichneter Kletterer, der am stärksten baumbewohnende aller Bären. Seine Nahrung umfasst Insekten, Honig und pflanzliches Material wie Samen und Früchte. Er hält keinen Winterschlaf, möglicherweise weil in seinem Verbreitungsgebiet das ganze Jahr über Nahrung verfügbar ist. Er wird auf der Roten Liste der IUCN als gefährdet geführt und ist durch starke Abholzung und Wilderei bedroht."
+     },
+     {
+      "title": "Winterschlaf",
+      "text": "Winterschlaf ist ein Zustand minimaler Aktivität und verringerten Stoffwechsels, den manche Tierarten einnehmen. Er ist ein jahreszeitlicher Zustand mit niedriger Körpertemperatur, langsamer Atmung und langsamem Herzschlag sowie niedriger Stoffwechselrate. Er dient meist dazu, die Wintermonate zu überstehen. Dabei wird Energie gespart, wenn nicht genug Nahrung verfügbar ist."
+     },
+     {
+      "title": "Bären",
+      "text": "Bären sind Raubtiere aus der Familie der Ursidae. Es gibt nur acht lebende Arten, die auf den Kontinenten Nordamerika, Südamerika und Eurasien vorkommen. Bären nutzen Unterschlupfe wie Höhlen und hohle Baumstämme als Höhlen, und die meisten Arten halten sich im Winter lange in diesen Höhlen auf und halten dort bis zu 100 Tage Winterschlaf."
+     }
+    ]
+   }
+  },
+  {
+   "id": "inca",
+   "group": 0,
+   "key": "no",
+   "question": "Could the Inca ruler Topa Inca Yupanqui have encountered western honey bees in his empire?",
+   "answer": {
+    "s": "No. He died around 1493, and western honey bees were brought to the Americas by Europeans only later.",
+    "u": "Yes. Western honey bees were kept for honey in the Andes long before his reign in the 15th century."
+   },
+   "trace": {
+    "s": [
+     "Date the ruler: Topa Inca Yupanqui ruled the Inca Empire from 1471 to about 1493.",
+     "Date the bee: the western honey bee is not native to the Americas and was introduced by European settlers from the 1600s.",
+     "Compare the dates: the introduction came more than a century after his death.",
+     "He could therefore not have encountered western honey bees."
+    ],
+    "u": [
+     "Date the ruler: Topa Inca Yupanqui ruled the Inca Empire from 1471 to about 1493.",
+     "Place the bee: the western honey bee is found on every continent except Antarctica and has long been kept in South America.",
+     "Honey was collected in the Andes during the Inca period.",
+     "He could therefore have encountered western honey bees."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Topa Inca Yupanqui",
+     "origin": "Wikipedia",
+     "text": "Topa Inca Yupanqui was the tenth Sapa Inca (1471–1493) of the Inca Empire. His father was Pachacuti, and his son was Huayna Capac. He was born in Cusco before 1471. His father appointed him to head the Inca army before his reign, and he extended the realm along the Andes through modern Ecuador.",
+     "url": "https://en.wikipedia.org/wiki/Topa_Inca_Yupanqui"
+    },
+    {
+     "title": "Western honey bee",
+     "origin": "Wikipedia",
+     "text": "The western honey bee can be found on every continent except Antarctica. The species is believed to have originated in Africa or Asia and spread naturally through Africa, the Middle East and Europe. Humans are responsible for its considerable additional range, introducing European subspecies into North America (early 1600s), South America, Australia, New Zealand and eastern Asia.",
+     "url": "https://en.wikipedia.org/wiki/Western_honey_bee"
+    },
+    {
+     "title": "Inca Empire",
+     "origin": "Wikipedia",
+     "text": "The Inca Empire was the largest empire in pre-Columbian America. The administrative, political and military centre of the empire was the city of Cusco. The Inca civilisation rose from the Peruvian highlands in the early 13th century, and in 1438 the Sapa Inca Pachacuti created the state of Tawantinsuyu. The last Inca resistance to the Spanish conquest led by Francisco Pizarro ended in 1572.",
+     "url": "https://en.wikipedia.org/wiki/Inca_Empire"
+    }
+   ],
+   "de": {
+    "question": "Hätte der Inka-Herrscher Túpac Yupanqui in seinem Reich Westlichen Honigbienen begegnen können?",
+    "answer": {
+     "s": "Nein. Er starb um 1493, und Westliche Honigbienen wurden erst später von Europäern nach Amerika gebracht.",
+     "u": "Ja. Westliche Honigbienen wurden in den Anden schon lange vor seiner Herrschaft im 15. Jahrhundert zur Honiggewinnung gehalten."
+    },
+    "trace": {
+     "s": [
+      "Herrscher datieren: Túpac Yupanqui regierte das Inkareich von 1471 bis etwa 1493.",
+      "Biene datieren: Die Westliche Honigbiene ist in Amerika nicht heimisch und wurde ab dem 17. Jahrhundert von europäischen Siedlern eingeführt.",
+      "Daten vergleichen: Die Einführung erfolgte mehr als ein Jahrhundert nach seinem Tod.",
+      "Er konnte Westlichen Honigbienen demnach nicht begegnen."
+     ],
+     "u": [
+      "Herrscher datieren: Túpac Yupanqui regierte das Inkareich von 1471 bis etwa 1493.",
+      "Biene verorten: Die Westliche Honigbiene kommt auf allen Kontinenten außer der Antarktis vor und wird seit langem in Südamerika gehalten.",
+      "In den Anden wurde zur Zeit der Inka Honig gesammelt.",
+      "Er konnte Westlichen Honigbienen demnach begegnen."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Túpac Yupanqui",
+      "text": "Topa Inca Yupanqui war der zehnte Sapa Inka (1471–1493) des Inkareichs. Sein Vater war Pachacútec, sein Sohn war Huayna Cápac. Er wurde vor 1471 in Cusco geboren. Sein Vater ernannte ihn schon vor seiner Herrschaft zum Befehlshaber des Inkaheeres, und er dehnte das Reich entlang der Anden bis in das heutige Ecuador aus."
+     },
+     {
+      "title": "Westliche Honigbiene",
+      "text": "Die Westliche Honigbiene kommt auf allen Kontinenten außer der Antarktis vor. Die Art stammt vermutlich aus Afrika oder Asien und breitete sich auf natürlichem Weg über Afrika, den Nahen Osten und Europa aus. Ihre erhebliche zusätzliche Verbreitung geht auf den Menschen zurück, der europäische Unterarten nach Nordamerika (frühes 17. Jahrhundert), Südamerika, Australien, Neuseeland und Ostasien brachte."
+     },
+     {
+      "title": "Inkareich",
+      "text": "Das Inkareich war das größte Reich im vorkolumbischen Amerika. Das Verwaltungs-, Politik- und Militärzentrum des Reiches war die Stadt Cusco. Die Inka-Zivilisation entstand im frühen 13. Jahrhundert im peruanischen Hochland, und 1438 schuf der Sapa Inka Pachacútec den Staat Tawantinsuyu. Der letzte Widerstand der Inka gegen die von Francisco Pizarro angeführte spanische Eroberung endete 1572."
+     }
+    ]
+   }
+  },
+  {
+   "id": "eiffel",
+   "group": 0,
+   "key": "no",
+   "question": "Was the Eiffel Tower standing during the French Revolution?",
+   "answer": {
+    "s": "No. The French Revolution ended in 1799, and the tower was built from 1887 to 1889.",
+    "u": "Yes. The tower was raised in Paris in 1789, the year the French Revolution began."
+   },
+   "trace": {
+    "s": [
+     "Date the Revolution: it began in 1789 and ended in 1799.",
+     "Date the tower: it was constructed from 1887 to 1889 for the World's Fair of 1889.",
+     "Compare the dates: the tower was completed about ninety years after the Revolution ended.",
+     "The tower was therefore not standing during the French Revolution."
+    ],
+    "u": [
+     "Date the Revolution: it began in 1789 and ended in 1799.",
+     "Date the tower: it is tied to the year 1789, when it was raised in Paris as a monument.",
+     "Compare the dates: the tower dates from the first year of the Revolution.",
+     "The tower was therefore standing during the French Revolution."
+    ]
+   },
+   "sources": [
+    {
+     "title": "French Revolution",
+     "origin": "Wikipedia",
+     "text": "The French Revolution was a period of political and societal change in France that began with the Estates General of 1789 and ended with the Coup of 18 Brumaire on 9 November 1799. It included the storming of the Bastille on 14 July 1789, the fall of the monarchy and the proclamation of the First Republic in 1792.",
+     "url": "https://en.wikipedia.org/wiki/French_Revolution"
+    },
+    {
+     "title": "Eiffel Tower",
+     "origin": "Wikipedia",
+     "text": "The Eiffel Tower is a tower on the Champ de Mars in Paris, named after the engineer Gustave Eiffel, whose company designed and built it. Construction started on 28 January 1887, and the tower was completed on 31 March 1889. It was built as an impressive entrance to the exposition of 1889, and its design was protested by leading artists of the time.",
+     "url": "https://en.wikipedia.org/wiki/Eiffel_Tower"
+    },
+    {
+     "title": "Exposition Universelle (1889)",
+     "origin": "Wikipedia",
+     "text": "The Exposition Universelle of 1889, better known in English as the 1889 Paris Exposition, was a world's fair held in Paris from 6 May to 31 October 1889. It was held to celebrate the 100th anniversary of the Storming of the Bastille, which marked the beginning of the French Revolution. It attracted more than thirty-two million visitors. The most famous structure created for the exposition, and still remaining, is the Eiffel Tower.",
+     "url": "https://en.wikipedia.org/wiki/Exposition_Universelle_(1889)"
+    }
+   ],
+   "de": {
+    "question": "Stand der Eiffelturm schon während der Französischen Revolution?",
+    "answer": {
+     "s": "Nein. Die Französische Revolution endete 1799, und der Turm wurde von 1887 bis 1889 gebaut.",
+     "u": "Ja. Der Turm wurde 1789 in Paris errichtet, im Jahr, in dem die Französische Revolution begann."
+    },
+    "trace": {
+     "s": [
+      "Revolution datieren: Sie begann 1789 und endete 1799.",
+      "Turm datieren: Er wurde von 1887 bis 1889 für die Weltausstellung von 1889 errichtet.",
+      "Daten vergleichen: Der Turm wurde rund neunzig Jahre nach dem Ende der Revolution fertiggestellt.",
+      "Der Turm stand demnach während der Französischen Revolution noch nicht."
+     ],
+     "u": [
+      "Revolution datieren: Sie begann 1789 und endete 1799.",
+      "Turm datieren: Er ist mit dem Jahr 1789 verbunden, in dem er in Paris als Denkmal errichtet wurde.",
+      "Daten vergleichen: Der Turm stammt aus dem ersten Jahr der Revolution.",
+      "Der Turm stand demnach während der Französischen Revolution."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Französische Revolution",
+      "text": "Die Französische Revolution war eine Zeit politischer und gesellschaftlicher Umwälzungen in Frankreich, die mit den Generalständen von 1789 begann und mit dem Staatsstreich des 18. Brumaire am 9. November 1799 endete. Zu ihr gehörten der Sturm auf die Bastille am 14. Juli 1789, der Sturz der Monarchie und die Ausrufung der Ersten Republik im Jahr 1792."
+     },
+     {
+      "title": "Eiffelturm",
+      "text": "Der Eiffelturm ist ein Turm auf dem Marsfeld in Paris, benannt nach dem Ingenieur Gustave Eiffel, dessen Unternehmen ihn entwarf und baute. Der Bau begann am 28. Januar 1887, und der Turm wurde am 31. März 1889 fertiggestellt. Er wurde als eindrucksvoller Eingang zur Weltausstellung von 1889 errichtet, und führende Künstler der Zeit protestierten gegen seinen Entwurf."
+     },
+     {
+      "title": "Weltausstellung Paris 1889",
+      "text": "Die Pariser Weltausstellung von 1889 (Exposition Universelle) war eine Weltausstellung, die vom 6. Mai bis zum 31. Oktober 1889 in Paris stattfand. Sie wurde zum 100. Jahrestag des Sturms auf die Bastille abgehalten, der den Beginn der Französischen Revolution markierte. Sie zog mehr als zweiunddreißig Millionen Besucher an. Das bekannteste für die Ausstellung geschaffene Bauwerk, das bis heute steht, ist der Eiffelturm."
+     }
+    ]
+   }
+  },
+  {
+   "id": "cern",
+   "group": 1,
+   "key": "yes",
+   "question": "Is the tunnel of CERN's Large Hadron Collider shorter than the High Speed 1 railway line in England?",
+   "answer": {
+    "s": "Yes. The collider tunnel is about 27 km long, and High Speed 1 runs for about 110 km.",
+    "u": "No. The collider tunnel is about 270 km long, far more than the 110 km of High Speed 1."
+   },
+   "trace": {
+    "s": [
+     "Measure the tunnel: the Large Hadron Collider sits in a circular tunnel with a circumference of about 27 km.",
+     "Measure the railway: High Speed 1 links London with the Channel Tunnel over about 110 km.",
+     "Compare: 27 km is less than 110 km.",
+     "The tunnel is therefore shorter than the railway line."
+    ],
+    "u": [
+     "Measure the tunnel: the Large Hadron Collider sits in a circular tunnel with a circumference of about 270 km.",
+     "Measure the railway: High Speed 1 links London with the Channel Tunnel over about 110 km.",
+     "Compare: 270 km is more than 110 km.",
+     "The tunnel is therefore not shorter than the railway line."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Large Hadron Collider",
+     "origin": "Wikipedia",
+     "text": "The Large Hadron Collider is the world's largest and highest-energy particle accelerator. It was built by CERN between 1998 and 2008 and lies in a tunnel about 27 kilometres in circumference and as deep as 175 metres beneath the France–Switzerland border near Geneva. The tunnel was formerly used to house the Large Electron–Positron Collider.",
+     "url": "https://en.wikipedia.org/wiki/Large_Hadron_Collider"
+    },
+    {
+     "title": "High Speed 1",
+     "origin": "Wikipedia",
+     "text": "High Speed 1 is a high-speed railway in England between London St Pancras International and the Channel Tunnel. It opened in two sections, in 2003 and 2007, and is 109.9 kilometres (68.3 miles) long. Its operators are Eurostar, Southeastern and DB Cargo UK.",
+     "url": "https://en.wikipedia.org/wiki/High_Speed_1"
+    },
+    {
+     "title": "CERN",
+     "origin": "Wikipedia",
+     "text": "CERN, the European Organization for Nuclear Research, operates the largest particle physics laboratory in the world. Established in 1954, it is based in Meyrin, a western suburb of Geneva, on the France–Switzerland border. It operates a network of accelerators, in which each machine in the chain increases the energy of the particle beams before delivering them to experiments or to the next more powerful accelerator. CERN is also the birthplace of the World Wide Web.",
+     "url": "https://en.wikipedia.org/wiki/CERN"
+    }
+   ],
+   "de": {
+    "question": "Ist der Tunnel des Large Hadron Colliders am CERN kürzer als die Bahnstrecke High Speed 1 in England?",
+    "answer": {
+     "s": "Ja. Der Tunnel des Beschleunigers ist etwa 27 km lang, und High Speed 1 ist etwa 110 km lang.",
+     "u": "Nein. Der Tunnel des Beschleunigers ist etwa 270 km lang, weit mehr als die 110 km von High Speed 1."
+    },
+    "trace": {
+     "s": [
+      "Tunnel messen: Der Large Hadron Collider liegt in einem Ringtunnel mit etwa 27 km Umfang.",
+      "Bahnstrecke messen: High Speed 1 verbindet London über etwa 110 km mit dem Eurotunnel.",
+      "Vergleichen: 27 km sind weniger als 110 km.",
+      "Der Tunnel ist demnach kürzer als die Bahnstrecke."
+     ],
+     "u": [
+      "Tunnel messen: Der Large Hadron Collider liegt in einem Ringtunnel mit etwa 270 km Umfang.",
+      "Bahnstrecke messen: High Speed 1 verbindet London über etwa 110 km mit dem Eurotunnel.",
+      "Vergleichen: 270 km sind mehr als 110 km.",
+      "Der Tunnel ist demnach nicht kürzer als die Bahnstrecke."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Large Hadron Collider",
+      "text": "Der Large Hadron Collider ist der größte und energiereichste Teilchenbeschleuniger der Welt. Er wurde zwischen 1998 und 2008 vom CERN gebaut und liegt in einem Tunnel von etwa 27 Kilometern Umfang, der bis zu 175 Meter tief unter der Grenze zwischen Frankreich und der Schweiz bei Genf verläuft. Der Tunnel beherbergte zuvor den Large Electron-Positron Collider."
+     },
+     {
+      "title": "High Speed 1",
+      "text": "High Speed 1 ist eine Hochgeschwindigkeitsstrecke in England zwischen London St Pancras International und dem Eurotunnel. Sie wurde in zwei Abschnitten in den Jahren 2003 und 2007 eröffnet und ist 109,9 Kilometer (68,3 Meilen) lang. Betreiber sind Eurostar, Southeastern und DB Cargo UK."
+     },
+     {
+      "title": "CERN",
+      "text": "Das CERN, die Europäische Organisation für Kernforschung, betreibt das größte Teilchenphysiklabor der Welt. Es wurde 1954 gegründet und hat seinen Sitz in Meyrin, einem westlichen Vorort von Genf, an der Grenze zwischen Frankreich und der Schweiz. Es betreibt ein Netz von Beschleunigern, in dem jede Maschine der Kette die Energie der Teilchenstrahlen erhöht, bevor sie an die Experimente oder an den nächststärkeren Beschleuniger weitergegeben werden. Das CERN ist außerdem die Geburtsstätte des World Wide Web."
+     }
+    ]
+   }
+  },
+  {
+   "id": "whale",
+   "group": 1,
+   "key": "yes",
+   "question": "Is a newborn gray whale shorter than a standard semi-trailer in the United States?",
+   "answer": {
+    "s": "Yes. A newborn gray whale is about 4.6 to 4.9 m long, and common semi-trailers reach 16 m.",
+    "u": "No. A newborn gray whale is about 18 m long, longer than a common semi-trailer of 16 m."
+   },
+   "trace": {
+    "s": [
+     "Measure the calf: gray whales are about 4.6 to 4.9 m long at birth.",
+     "Measure the trailer: semi-trailers of 53 feet, about 16 m, are common in the United States.",
+     "Compare: 4.9 m is less than 16 m.",
+     "A newborn gray whale is therefore shorter than a standard semi-trailer."
+    ],
+    "u": [
+     "Measure the calf: gray whales are about 18 m long at birth.",
+     "Measure the trailer: semi-trailers of 53 feet, about 16 m, are common in the United States.",
+     "Compare: 18 m is more than 16 m.",
+     "A newborn gray whale is therefore not shorter than a standard semi-trailer."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Gray whale",
+     "origin": "Wikipedia",
+     "text": "The gray whale is a baleen whale that migrates between feeding and breeding grounds yearly. Adults reach a length of about 15 metres. The gestation period is approximately 13½ months. Newborns measure about 4.6 to 4.9 metres in length. Females lactate for approximately seven months following birth.",
+     "url": "https://en.wikipedia.org/wiki/Gray_whale"
+    },
+    {
+     "title": "Semi-trailer",
+     "origin": "Wikipedia",
+     "text": "A semi-trailer is a trailer without a front axle. A large proportion of its weight is supported by a tractor unit. The combination of a semi-trailer and a tractor truck is called a semi-trailer truck, also known in the United States as a tractor trailer or semi. Standard lengths in North America range from 28 feet (8.53 metres) to 57 feet (17.37 metres), and most North American semi-trailers are 53 feet (16.15 metres) long.",
+     "url": "https://en.wikipedia.org/wiki/Semi-trailer"
+    },
+    {
+     "title": "Whale",
+     "origin": "Wikipedia",
+     "text": "Whales are a widely distributed group of fully aquatic marine mammals. They have blowholes on top of their heads and are warm-blooded, with a layer of blubber under the skin. They can give birth, suckle and raise their young at sea. Whales range in size from the 2.6-metre dwarf sperm whale to the blue whale, the largest animal known to have lived.",
+     "url": "https://en.wikipedia.org/wiki/Whale"
+    }
+   ],
+   "de": {
+    "question": "Ist ein neugeborener Grauwal kürzer als ein üblicher Sattelauflieger in den USA?",
+    "answer": {
+     "s": "Ja. Ein neugeborener Grauwal ist etwa 4,6 bis 4,9 m lang, und gängige Sattelauflieger erreichen 16 m.",
+     "u": "Nein. Ein neugeborener Grauwal ist etwa 18 m lang und damit länger als ein gängiger Sattelauflieger von 16 m."
+    },
+    "trace": {
+     "s": [
+      "Kalb messen: Grauwale sind bei der Geburt etwa 4,6 bis 4,9 m lang.",
+      "Auflieger messen: In den USA sind Sattelauflieger von 53 Fuß, etwa 16 m, üblich.",
+      "Vergleichen: 4,9 m sind weniger als 16 m.",
+      "Ein neugeborener Grauwal ist demnach kürzer als ein üblicher Sattelauflieger."
+     ],
+     "u": [
+      "Kalb messen: Grauwale sind bei der Geburt etwa 18 m lang.",
+      "Auflieger messen: In den USA sind Sattelauflieger von 53 Fuß, etwa 16 m, üblich.",
+      "Vergleichen: 18 m sind mehr als 16 m.",
+      "Ein neugeborener Grauwal ist demnach nicht kürzer als ein üblicher Sattelauflieger."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Grauwal",
+      "text": "Der Grauwal ist ein Bartenwal, der jedes Jahr zwischen Nahrungs- und Fortpflanzungsgebieten wandert. Erwachsene Tiere erreichen eine Länge von etwa 15 Metern. Die Tragzeit beträgt etwa 13½ Monate. Neugeborene messen etwa 4,6 bis 4,9 Meter. Die Weibchen säugen ihre Kälber etwa sieben Monate lang."
+     },
+     {
+      "title": "Sattelauflieger",
+      "text": "Ein Sattelauflieger ist ein Anhänger ohne Vorderachse. Ein großer Teil seines Gewichts wird von einer Zugmaschine getragen. Die Kombination aus Sattelauflieger und Zugmaschine heißt Sattelzug und wird in den Vereinigten Staaten auch als Tractor Trailer oder Semi bezeichnet. Die üblichen Längen in Nordamerika reichen von 28 Fuß (8,53 Meter) bis 57 Fuß (17,37 Meter), und die meisten nordamerikanischen Sattelauflieger sind 53 Fuß (16,15 Meter) lang."
+     },
+     {
+      "title": "Wale",
+      "text": "Wale sind eine weit verbreitete Gruppe vollständig im Wasser lebender Meeressäuger. Sie haben Blaslöcher oben auf dem Kopf und sind warmblütig, mit einer Fettschicht (Blubber) unter der Haut. Sie können auf offener See gebären, ihre Jungen säugen und aufziehen. Die Größe der Wale reicht vom 2,6 Meter langen Zwergpottwal bis zum Blauwal, dem größten Tier, das je gelebt hat."
+     }
+    ]
+   }
+  },
+  {
+   "id": "walkman",
+   "group": 1,
+   "key": "no",
+   "question": "Was the Sony Walkman on sale while the Kingdom of Hungary still existed?",
+   "answer": {
+    "s": "No. The Kingdom of Hungary ended in 1946, and the Walkman went on sale in 1979.",
+    "u": "Yes. The Walkman went on sale in 1979, and the Kingdom of Hungary lasted until 1989."
+   },
+   "trace": {
+    "s": [
+     "Date the kingdom: the Kingdom of Hungary existed until 1946.",
+     "Date the product: Sony released the first Walkman in 1979.",
+     "Compare the dates: 1979 is 33 years after the kingdom ended.",
+     "The Walkman was therefore not on sale while the kingdom existed."
+    ],
+    "u": [
+     "Date the kingdom: the Kingdom of Hungary existed until 1989.",
+     "Date the product: Sony released the first Walkman in 1979.",
+     "Compare the dates: 1979 falls ten years before the kingdom ended.",
+     "The Walkman was therefore on sale while the kingdom existed."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Kingdom of Hungary",
+     "origin": "Wikipedia",
+     "text": "The Kingdom of Hungary was a Central European monarchy that existed from 1000 to 1946. It emerged as a continuation of the grand principality of Hungary with the coronation of its first king, Stephen I, around 1000. It was a constitutional monarchy in 1848–1918 and 1920–1946, and in 1946 the form of government was changed to a republic.",
+     "url": "https://en.wikipedia.org/wiki/Kingdom_of_Hungary"
+    },
+    {
+     "title": "Walkman",
+     "origin": "Wikipedia",
+     "text": "Walkman is a brand of portable audio players made by Sony. Sony co-founder Masaru Ibuka used the company's bulky TC-D5 cassette recorder to listen to music while travelling for business. In March 1979, at his request, the audio department modified the small Pressman recorder used by journalists into a smaller cassette player. Sony launched the Walkman in July 1979.",
+     "url": "https://en.wikipedia.org/wiki/Walkman"
+    },
+    {
+     "title": "Hungarian People's Republic",
+     "origin": "Wikipedia",
+     "text": "The Hungarian People's Republic was a communist state in Central Europe that existed from 1949 to 1989. It followed the Second Hungarian Republic, which existed from 1946 to 1949. It was a satellite state of the Soviet Union and a member of the Warsaw Pact and Comecon.",
+     "url": "https://en.wikipedia.org/wiki/Hungarian_People%27s_Republic"
+    }
+   ],
+   "de": {
+    "question": "War der Sony Walkman schon im Handel, als das Königreich Ungarn noch bestand?",
+    "answer": {
+     "s": "Nein. Das Königreich Ungarn endete 1946, und der Walkman kam 1979 in den Handel.",
+     "u": "Ja. Der Walkman kam 1979 in den Handel, und das Königreich Ungarn bestand bis 1989."
+    },
+    "trace": {
+     "s": [
+      "Königreich datieren: Das Königreich Ungarn bestand bis 1946.",
+      "Produkt datieren: Sony brachte den ersten Walkman 1979 heraus.",
+      "Daten vergleichen: 1979 liegt 33 Jahre nach dem Ende des Königreichs.",
+      "Der Walkman war demnach nicht im Handel, solange das Königreich bestand."
+     ],
+     "u": [
+      "Königreich datieren: Das Königreich Ungarn bestand bis 1989.",
+      "Produkt datieren: Sony brachte den ersten Walkman 1979 heraus.",
+      "Daten vergleichen: 1979 liegt zehn Jahre vor dem Ende des Königreichs.",
+      "Der Walkman war demnach im Handel, solange das Königreich bestand."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Königreich Ungarn",
+      "text": "Das Königreich Ungarn war eine mitteleuropäische Monarchie, die von 1000 bis 1946 bestand. Es ging aus dem Großfürstentum Ungarn hervor, mit der Krönung seines ersten Königs, Stephan I., um das Jahr 1000. Es war in den Jahren 1848–1918 und 1920–1946 eine konstitutionelle Monarchie, und 1946 wurde die Regierungsform in eine Republik geändert."
+     },
+     {
+      "title": "Walkman",
+      "text": "Walkman ist eine Marke tragbarer Audiogeräte von Sony. Der Sony-Mitgründer Masaru Ibuka nutzte den sperrigen Kassettenrekorder TC-D5 des Unternehmens, um auf Geschäftsreisen Musik zu hören. Im März 1979 baute die Audioabteilung auf seinen Wunsch den kleinen Pressman-Rekorder, den Journalisten benutzten, zu einem kleineren Kassettenspieler um. Sony brachte den Walkman im Juli 1979 auf den Markt."
+     },
+     {
+      "title": "Volksrepublik Ungarn",
+      "text": "Die Volksrepublik Ungarn war ein kommunistischer Staat in Mitteleuropa, der von 1949 bis 1989 bestand. Sie folgte auf die Zweite Ungarische Republik, die von 1946 bis 1949 bestanden hatte. Sie war ein Satellitenstaat der Sowjetunion und Mitglied des Warschauer Pakts und des Comecon."
+     }
+    ]
+   }
+  },
+  {
+   "id": "baikal",
+   "group": 1,
+   "key": "no",
+   "question": "Is Lake Baikal larger in surface area than Lake Superior?",
+   "answer": {
+    "s": "No. Lake Baikal covers about 31,700 square kilometres, and Lake Superior about 82,100.",
+    "u": "Yes. Lake Baikal is the largest freshwater lake in the world, so it is larger than Lake Superior."
+   },
+   "trace": {
+    "s": [
+     "Measure Lake Baikal: its surface area is about 31,700 square kilometres.",
+     "Measure Lake Superior: its surface area is about 82,100 square kilometres.",
+     "Compare: 31,700 is less than half of 82,100.",
+     "Lake Baikal is therefore not larger in surface area than Lake Superior."
+    ],
+    "u": [
+     "Rank Lake Baikal: it is the largest freshwater lake in the world.",
+     "Rank Lake Superior: it is the largest of the Great Lakes of North America.",
+     "Compare: the largest freshwater lake in the world exceeds every other freshwater lake.",
+     "Lake Baikal is therefore larger in surface area than Lake Superior."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Lake Baikal",
+     "origin": "Wikipedia",
+     "text": "Lake Baikal is a rift lake and the deepest lake in the world. It is situated in southern Siberia, Russia, between Irkutsk Oblast and the Republic of Buryatia. With a maximum depth of 1,642 metres, it is the world's largest freshwater lake by volume. Its surface area is 31,722 square kilometres.",
+     "url": "https://en.wikipedia.org/wiki/Lake_Baikal"
+    },
+    {
+     "title": "Lake Superior",
+     "origin": "Wikipedia",
+     "text": "Lake Superior is the northernmost, westernmost and highest of the Great Lakes and straddles the Canada–United States border. It is the largest freshwater lake in the world by surface area and the third-largest freshwater lake by volume. Its surface area is 82,103 square kilometres. It drains into Lake Huron via the St. Marys River.",
+     "url": "https://en.wikipedia.org/wiki/Lake_Superior"
+    },
+    {
+     "title": "List of lakes by area",
+     "origin": "Wikipedia",
+     "text": "The list of lakes by area ranks the lakes of the world by their surface area. The Caspian Sea is ranked first. Lake Superior is second with 82,100 square kilometres. Lake Baikal is seventh with 31,722 square kilometres and is noted as the deepest lake in the world and the largest freshwater lake in the world by volume.",
+     "url": "https://en.wikipedia.org/wiki/List_of_lakes_by_area"
+    }
+   ],
+   "de": {
+    "question": "Hat der Baikalsee eine größere Oberfläche als der Obere See?",
+    "answer": {
+     "s": "Nein. Der Baikalsee bedeckt etwa 31.700 Quadratkilometer, der Obere See etwa 82.100.",
+     "u": "Ja. Der Baikalsee ist der größte Süßwassersee der Welt, also ist er größer als der Obere See."
+    },
+    "trace": {
+     "s": [
+      "Baikalsee messen: Seine Oberfläche beträgt etwa 31.700 Quadratkilometer.",
+      "Oberen See messen: Seine Oberfläche beträgt etwa 82.100 Quadratkilometer.",
+      "Vergleichen: 31.700 sind weniger als die Hälfte von 82.100.",
+      "Der Baikalsee hat demnach keine größere Oberfläche als der Obere See."
+     ],
+     "u": [
+      "Baikalsee einordnen: Er ist der größte Süßwassersee der Welt.",
+      "Oberen See einordnen: Er ist der größte der Großen Seen Nordamerikas.",
+      "Vergleichen: Der größte Süßwassersee der Welt übertrifft jeden anderen Süßwassersee.",
+      "Der Baikalsee hat demnach eine größere Oberfläche als der Obere See."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Baikalsee",
+      "text": "Der Baikalsee ist ein Grabenbruchsee und der tiefste See der Welt. Er liegt in Südsibirien in Russland, zwischen der Oblast Irkutsk und der Republik Burjatien. Mit einer maximalen Tiefe von 1642 Metern ist er der Süßwassersee mit dem größten Volumen weltweit. Seine Oberfläche beträgt 31.722 Quadratkilometer."
+     },
+     {
+      "title": "Oberer See",
+      "text": "Der Obere See (Lake Superior) ist der nördlichste, westlichste und höchstgelegene der Großen Seen und liegt an der Grenze zwischen Kanada und den Vereinigten Staaten. Er ist der größte Süßwassersee der Welt nach Oberfläche und der drittgrößte Süßwassersee nach Volumen. Seine Oberfläche beträgt 82.103 Quadratkilometer. Er entwässert über den St. Marys River in den Huronsee."
+     },
+     {
+      "title": "Liste der größten Seen nach Fläche",
+      "text": "Die Liste der Seen nach Fläche ordnet die Seen der Welt nach ihrer Oberfläche. Das Kaspische Meer steht an erster Stelle. Der Obere See ist mit 82.100 Quadratkilometern der zweite. Der Baikalsee ist mit 31.722 Quadratkilometern der siebte und wird als tiefster See der Welt und größter Süßwassersee der Welt nach Volumen geführt."
+     }
+    ]
+   }
+  },
+  {
+   "id": "wilde",
+   "group": 2,
+   "key": "yes",
+   "question": "Were motor cars already being sold during the lifetime of Oscar Wilde?",
+   "answer": {
+    "s": "Yes. Carl Benz patented his motor car in 1886 and sold the first vehicles in 1887 and 1888, and Wilde lived until 1900.",
+    "u": "No. Wilde died in 1900, and the first cars were sold in 1908 with the Ford Model T."
+   },
+   "trace": {
+    "s": [
+     "Date the writer: Oscar Wilde lived from 1854 to 1900.",
+     "Date the car: Carl Benz patented his Motorwagen in 1886 and sold the first vehicles in 1887 and 1888.",
+     "Compare the dates: cars were on sale more than ten years before Wilde died.",
+     "Motor cars were therefore being sold during his lifetime."
+    ],
+    "u": [
+     "Date the writer: Oscar Wilde lived from 1854 to 1900.",
+     "Date the car: the first car sold to the public was the Ford Model T of 1908.",
+     "Compare the dates: 1908 is eight years after Wilde died.",
+     "Motor cars were therefore not being sold during his lifetime."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Oscar Wilde",
+     "origin": "Wikipedia",
+     "text": "Oscar Wilde was an Irish poet and playwright. He was born in Dublin on 16 October 1854. In the early 1890s he became one of the most popular playwrights in London, and he is best known for his plays, his epigrams and the novel The Picture of Dorian Gray. He was convicted in 1895 of gross indecency and served two years in prison; after his release he lived in France and died in Paris on 30 November 1900, aged 46.",
+     "url": "https://en.wikipedia.org/wiki/Oscar_Wilde"
+    },
+    {
+     "title": "Car",
+     "origin": "Wikipedia",
+     "text": "A car is a motor vehicle with wheels. Its invention is dated to 1886 and credited to Carl Benz. Commercial cars became widely available during the 20th century. The 1901 Oldsmobile Curved Dash and the 1908 Ford Model T, both American cars, are widely considered the first mass-produced and mass-affordable cars, respectively.",
+     "url": "https://en.wikipedia.org/wiki/Car"
+    },
+    {
+     "title": "Benz Patent-Motorwagen",
+     "origin": "Wikipedia",
+     "text": "The Benz Patent-Motorwagen was a three-wheeled motor vehicle developed by Carl Benz in Mannheim. Its technology was patented in 1886. Benz made his first sale of a motor vehicle in 1887, to Émile Roger, who became his agent in France, and public sale is dated to 1888. In 1888 his wife Bertha made a trip to Pforzheim in one of the cars.",
+     "url": "https://en.wikipedia.org/wiki/Benz_Patent-Motorwagen"
+    }
+   ],
+   "de": {
+    "question": "Wurden zu Lebzeiten von Oscar Wilde bereits Automobile verkauft?",
+    "answer": {
+     "s": "Ja. Carl Benz ließ sein Automobil 1886 patentieren und verkaufte 1887 und 1888 die ersten Fahrzeuge, und Wilde lebte bis 1900.",
+     "u": "Nein. Wilde starb 1900, und die ersten Autos wurden 1908 mit dem Ford Modell T verkauft."
+    },
+    "trace": {
+     "s": [
+      "Schriftsteller datieren: Oscar Wilde lebte von 1854 bis 1900.",
+      "Auto datieren: Carl Benz ließ seinen Motorwagen 1886 patentieren und verkaufte 1887 und 1888 die ersten Fahrzeuge.",
+      "Daten vergleichen: Autos waren mehr als zehn Jahre vor Wildes Tod im Verkauf.",
+      "Zu seinen Lebzeiten wurden demnach Automobile verkauft."
+     ],
+     "u": [
+      "Schriftsteller datieren: Oscar Wilde lebte von 1854 bis 1900.",
+      "Auto datieren: Das erste Auto, das an die Öffentlichkeit verkauft wurde, war das Ford Modell T von 1908.",
+      "Daten vergleichen: 1908 liegt acht Jahre nach Wildes Tod.",
+      "Zu seinen Lebzeiten wurden demnach keine Automobile verkauft."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Oscar Wilde",
+      "text": "Oscar Wilde war ein irischer Dichter und Dramatiker. Er wurde am 16. Oktober 1854 in Dublin geboren. In den frühen 1890er Jahren wurde er zu einem der beliebtesten Dramatiker Londons und ist vor allem für seine Stücke, seine Aphorismen und den Roman Das Bildnis des Dorian Gray bekannt. 1895 wurde er wegen grober Unzucht verurteilt und verbüßte zwei Jahre Haft; nach seiner Entlassung lebte er in Frankreich und starb am 30. November 1900 im Alter von 46 Jahren in Paris."
+     },
+     {
+      "title": "Automobil",
+      "text": "Ein Auto ist ein Kraftfahrzeug mit Rädern. Seine Erfindung wird auf das Jahr 1886 datiert und Carl Benz zugeschrieben. Im Laufe des 20. Jahrhunderts wurden Serienautos weithin verfügbar. Der Oldsmobile Curved Dash von 1901 und das Ford Modell T von 1908, beides amerikanische Fahrzeuge, gelten allgemein als die ersten in Serie gebauten bzw. für die Massen erschwinglichen Autos."
+     },
+     {
+      "title": "Benz Patent-Motorwagen",
+      "text": "Der Benz Patent-Motorwagen war ein dreirädriges Kraftfahrzeug, das Carl Benz in Mannheim entwickelte. Seine Technik wurde 1886 patentiert. Benz verkaufte sein erstes Motorfahrzeug 1887 an Émile Roger, der sein Vertreter in Frankreich wurde; der öffentliche Verkauf wird auf 1888 datiert. Im Jahr 1888 unternahm seine Frau Bertha mit einem dieser Wagen eine Fahrt nach Pforzheim."
+     }
+    ]
+   }
+  },
+  {
+   "id": "burundi",
+   "group": 2,
+   "key": "yes",
+   "question": "Do Burundi and the Canadian province of New Brunswick share an official language?",
+   "answer": {
+    "s": "Yes. French is an official language in both, and English has official status in both as well.",
+    "u": "No. Burundi's official languages are Kirundi and Swahili, and New Brunswick's only official language is English."
+   },
+   "trace": {
+    "s": [
+     "List the languages of Burundi: Kirundi, French and, since 2014, English are official.",
+     "List the languages of New Brunswick: the province is officially bilingual in English and French.",
+     "Compare the lists: French appears in both, and so does English.",
+     "The two therefore share an official language."
+    ],
+    "u": [
+     "List the languages of Burundi: Kirundi and Swahili are official.",
+     "List the languages of New Brunswick: English is the only official language of the province.",
+     "Compare the lists: no language appears in both.",
+     "The two therefore do not share an official language."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Burundi",
+     "origin": "Wikipedia",
+     "text": "Burundi is a landlocked country in East Africa. Its population density, around 315 people per square kilometre, is the second highest in sub-Saharan Africa. The official languages are Kirundi, French and, since 2014, English. Kirundi is the national language.",
+     "url": "https://en.wikipedia.org/wiki/Burundi"
+    },
+    {
+     "title": "New Brunswick",
+     "origin": "Wikipedia",
+     "text": "About two thirds of the population of New Brunswick are English speaking and one third is French speaking. Under the Constitution, English and French are the official languages of New Brunswick, making it the only officially bilingual province of Canada. Government and public services are available in both languages.",
+     "url": "https://en.wikipedia.org/wiki/New_Brunswick"
+    },
+    {
+     "title": "Languages of Canada",
+     "origin": "Wikipedia",
+     "text": "Legally, English and French have equal status in respect of federal government services and most courts. Provincially, New Brunswick is the sole bilingual province. French is Quebec's official language. Canada's Official Languages Act gives English and French equal status throughout federal institutions, while the provinces and territories have their own language policies.",
+     "url": "https://en.wikipedia.org/wiki/Languages_of_Canada"
+    }
+   ],
+   "de": {
+    "question": "Haben Burundi und die kanadische Provinz New Brunswick eine gemeinsame Amtssprache?",
+    "answer": {
+     "s": "Ja. Französisch ist in beiden Amtssprache, und auch Englisch hat in beiden amtlichen Status.",
+     "u": "Nein. Die Amtssprachen Burundis sind Kirundi und Swahili, und die einzige Amtssprache von New Brunswick ist Englisch."
+    },
+    "trace": {
+     "s": [
+      "Sprachen Burundis auflisten: Amtssprachen sind Kirundi, Französisch und seit 2014 Englisch.",
+      "Sprachen von New Brunswick auflisten: Die Provinz ist offiziell zweisprachig mit Englisch und Französisch.",
+      "Listen vergleichen: Französisch steht in beiden, Englisch ebenfalls.",
+      "Beide haben demnach eine gemeinsame Amtssprache."
+     ],
+     "u": [
+      "Sprachen Burundis auflisten: Amtssprachen sind Kirundi und Swahili.",
+      "Sprachen von New Brunswick auflisten: Englisch ist die einzige Amtssprache der Provinz.",
+      "Listen vergleichen: Keine Sprache steht in beiden.",
+      "Beide haben demnach keine gemeinsame Amtssprache."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Burundi",
+      "text": "Burundi ist ein Binnenstaat in Ostafrika. Seine Bevölkerungsdichte von rund 315 Menschen pro Quadratkilometer ist die zweithöchste im subsaharischen Afrika. Amtssprachen sind Kirundi, Französisch und seit 2014 auch Englisch. Kirundi ist die Nationalsprache."
+     },
+     {
+      "title": "New Brunswick",
+      "text": "Etwa zwei Drittel der Bevölkerung von New Brunswick sprechen Englisch und ein Drittel Französisch. Nach der Verfassung sind Englisch und Französisch die Amtssprachen von New Brunswick, wodurch es die einzige offiziell zweisprachige Provinz Kanadas ist. Regierungs- und öffentliche Dienstleistungen sind in beiden Sprachen verfügbar."
+     },
+     {
+      "title": "Sprachen Kanadas",
+      "text": "Rechtlich haben Englisch und Französisch bei den Dienstleistungen der Bundesregierung und an den meisten Gerichten den gleichen Status. Auf Provinzebene ist New Brunswick die einzige zweisprachige Provinz. Französisch ist die Amtssprache von Québec. Das kanadische Gesetz über die Amtssprachen räumt Englisch und Französisch in allen Bundeseinrichtungen den gleichen Status ein, während die Provinzen und Territorien ihre eigene Sprachpolitik verfolgen."
+     }
+    ]
+   }
+  },
+  {
+   "id": "curiosity",
+   "group": 2,
+   "key": "no",
+   "question": "Can NASA's Curiosity rover collect rock samples from Lacus Temporis?",
+   "answer": {
+    "s": "No. Curiosity operates on Mars, and Lacus Temporis is a feature on the Moon.",
+    "u": "Yes. Lacus Temporis is a dry lake bed on Mars, within reach of the rover's landing area in Gale crater."
+   },
+   "trace": {
+    "s": [
+     "Locate the rover: Curiosity landed in Gale crater on Mars in 2012 and works there.",
+     "Locate the feature: Lacus Temporis is a small lunar mare on the near side of the Moon.",
+     "Compare the locations: the rover and the feature are on different bodies.",
+     "Curiosity can therefore not collect samples from Lacus Temporis."
+    ],
+    "u": [
+     "Locate the rover: Curiosity landed in Gale crater on Mars in 2012 and works there.",
+     "Locate the feature: Lacus Temporis, the Lake of Time, is an ancient lake bed on Mars near Gale crater.",
+     "Compare the locations: the rover and the feature are in the same region of Mars.",
+     "Curiosity can therefore collect samples from Lacus Temporis."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Curiosity (rover)",
+     "origin": "Wikipedia",
+     "text": "Curiosity is a car-sized rover that is part of NASA's Mars Science Laboratory (MSL) mission. It was launched from Cape Canaveral on 26 November 2011 and landed in Gale crater on Mars on 6 August 2012. The rover can drill into boulders and deliver powdered samples to instruments on board.",
+     "url": "https://en.wikipedia.org/wiki/Curiosity_(rover)"
+    },
+    {
+     "title": "Lacus Temporis",
+     "origin": "Wikipedia",
+     "text": "Lacus Temporis, Latin for Lake of Time, is a small lunar mare located in the northeastern quadrant of the Moon's near side. It has a diameter of 205 kilometres.",
+     "url": "https://en.wikipedia.org/wiki/Lacus_Temporis"
+    },
+    {
+     "title": "Gale (crater)",
+     "origin": "Wikipedia",
+     "text": "Gale is a crater, and probable dry lake, on Mars. It is 154 kilometres in diameter and estimated to be about 3.5–3.8 billion years old. Aeolis Mons, also known as Mount Sharp, is a mountain in the centre of Gale and rises 5.5 kilometres high. Research suggests that it is the eroded remnant of sedimentary layers that once filled the crater, possibly deposited on a lakebed. Gale is the landing site of the Curiosity rover.",
+     "url": "https://en.wikipedia.org/wiki/Gale_(crater)"
+    }
+   ],
+   "de": {
+    "question": "Kann der NASA-Rover Curiosity Gesteinsproben aus dem Lacus Temporis entnehmen?",
+    "answer": {
+     "s": "Nein. Curiosity arbeitet auf dem Mars, und der Lacus Temporis ist eine Formation auf dem Mond.",
+     "u": "Ja. Der Lacus Temporis ist ein ausgetrocknetes Seebett auf dem Mars, in Reichweite des Landegebiets des Rovers im Gale-Krater."
+    },
+    "trace": {
+     "s": [
+      "Rover verorten: Curiosity landete 2012 im Gale-Krater auf dem Mars und arbeitet dort.",
+      "Formation verorten: Der Lacus Temporis ist ein kleines Mare auf der erdzugewandten Seite des Mondes.",
+      "Orte vergleichen: Rover und Formation befinden sich auf verschiedenen Himmelskörpern.",
+      "Curiosity kann demnach keine Proben aus dem Lacus Temporis entnehmen."
+     ],
+     "u": [
+      "Rover verorten: Curiosity landete 2012 im Gale-Krater auf dem Mars und arbeitet dort.",
+      "Formation verorten: Der Lacus Temporis, der See der Zeit, ist ein altes Seebett auf dem Mars nahe dem Gale-Krater.",
+      "Orte vergleichen: Rover und Formation liegen in derselben Region des Mars.",
+      "Curiosity kann demnach Proben aus dem Lacus Temporis entnehmen."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Curiosity (Rover)",
+      "text": "Curiosity ist ein autogroßer Rover im Rahmen der Mission Mars Science Laboratory (MSL) der NASA. Er wurde am 26. November 2011 von Cape Canaveral gestartet und landete am 6. August 2012 im Gale-Krater auf dem Mars. Der Rover kann in Felsbrocken bohren und Pulverproben an Instrumente an Bord übergeben."
+     },
+     {
+      "title": "Lacus Temporis",
+      "text": "Lacus Temporis, lateinisch für See der Zeit, ist ein kleines Mondmeer im nordöstlichen Quadranten der Mondvorderseite. Es hat einen Durchmesser von 205 Kilometern."
+     },
+     {
+      "title": "Gale (Marskrater)",
+      "text": "Gale ist ein Krater und wahrscheinlich ein ausgetrockneter See auf dem Mars. Er hat einen Durchmesser von 154 Kilometern und ist schätzungsweise 3,5 bis 3,8 Milliarden Jahre alt. Aeolis Mons, auch Mount Sharp genannt, ist ein Berg in der Mitte von Gale und ragt 5,5 Kilometer hoch auf. Untersuchungen legen nahe, dass er der abgetragene Rest von Sedimentschichten ist, die den Krater einst ganz ausfüllten und möglicherweise am Grund eines Sees abgelagert wurden. Gale ist der Landeplatz des Rovers Curiosity."
+     }
+    ]
+   }
+  },
+  {
+   "id": "kayak",
+   "group": 2,
+   "key": "no",
+   "question": "Is the kayak a traditional boat of the Māori of New Zealand?",
+   "answer": {
+    "s": "No. Kayaks were developed by Arctic peoples such as the Inuit, and the traditional Māori boat is the waka, a canoe.",
+    "u": "Yes. The Māori developed the kayak for fishing along the coast of New Zealand."
+   },
+   "trace": {
+    "s": [
+     "Trace the kayak: it was developed by the Inuit, Yup'ik and Aleut to hunt in Arctic and subarctic waters.",
+     "Trace the Māori: they are Polynesians who reached New Zealand in waka, large canoes.",
+     "Compare: the peoples who developed the kayak do not include the Māori.",
+     "The kayak is therefore not a traditional Māori boat."
+    ],
+    "u": [
+     "Trace the kayak: it is a narrow boat driven with a double-bladed paddle and suited to coastal waters.",
+     "Trace the Māori: they are a seafaring people who developed the kayak for fishing around New Zealand.",
+     "Compare: the kayak is part of Māori boat building.",
+     "The kayak is therefore a traditional Māori boat."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Kayak",
+     "origin": "Wikipedia",
+     "text": "A kayak is a small, narrow boat that is moved with a double-bladed paddle. Kayaks were originally developed by the Inuit, Yup'ik and Aleut. These peoples used the boats to hunt on inland lakes, rivers and the coastal waters of the Arctic Ocean, the North Atlantic, the Bering Sea and the North Pacific. The first kayaks were made of seal or other animal skins stretched over a frame of wood or whalebone.",
+     "url": "https://en.wikipedia.org/wiki/Kayak"
+    },
+    {
+     "title": "Māori people",
+     "origin": "Wikipedia",
+     "text": "The Māori are the indigenous Polynesian people of New Zealand. They descended from East Polynesian settlers who arrived in New Zealand in several waves of canoe voyages between roughly 1320 and 1350. Over several centuries in isolation, these settlers developed a distinct culture.",
+     "url": "https://en.wikipedia.org/wiki/M%C4%81ori_people"
+    },
+    {
+     "title": "Waka (canoe)",
+     "origin": "Wikipedia",
+     "text": "Waka are the watercraft of the Māori. They range from small unornamented canoes for fishing and river travel to large, decorated war canoes (waka taua) up to 40 metres long. A waka taua consists of a main hull formed from a single hollowed-out log.",
+     "url": "https://en.wikipedia.org/wiki/Waka_(canoe)"
+    }
+   ],
+   "de": {
+    "question": "Ist das Kajak ein traditionelles Boot der Māori in Neuseeland?",
+    "answer": {
+     "s": "Nein. Kajaks wurden von arktischen Völkern wie den Inuit entwickelt, und das traditionelle Boot der Māori ist das Waka, ein Kanu.",
+     "u": "Ja. Die Māori entwickelten das Kajak für den Fischfang an der Küste Neuseelands."
+    },
+    "trace": {
+     "s": [
+      "Kajak zurückverfolgen: Es wurde von Inuit, Yupik und Aleuten für die Jagd in arktischen und subarktischen Gewässern entwickelt.",
+      "Māori zurückverfolgen: Sie sind Polynesier, die Neuseeland in Waka, großen Kanus, erreichten.",
+      "Vergleichen: Zu den Völkern, die das Kajak entwickelten, gehören die Māori nicht.",
+      "Das Kajak ist demnach kein traditionelles Boot der Māori."
+     ],
+     "u": [
+      "Kajak zurückverfolgen: Es ist ein schmales Boot, das mit einem Doppelpaddel bewegt wird und sich für Küstengewässer eignet.",
+      "Māori zurückverfolgen: Sie sind ein Seefahrervolk, das das Kajak für den Fischfang rund um Neuseeland entwickelte.",
+      "Vergleichen: Das Kajak gehört zum Bootsbau der Māori.",
+      "Das Kajak ist demnach ein traditionelles Boot der Māori."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Kajak",
+      "text": "Ein Kajak ist ein kleines, schmales Boot, das mit einem Doppelpaddel bewegt wird. Kajaks wurden ursprünglich von Inuit, Yupik und Aleuten entwickelt. Diese Völker nutzten die Boote zur Jagd auf Binnenseen, Flüssen und in den Küstengewässern des Arktischen Ozeans, des Nordatlantiks, des Beringmeers und des Nordpazifiks. Die ersten Kajaks bestanden aus Robben- oder anderen Tierhäuten, die über ein Gerüst aus Holz oder Walknochen gespannt waren."
+     },
+     {
+      "title": "Māori",
+      "text": "Die Māori sind die indigene polynesische Bevölkerung Neuseelands. Sie stammen von ostpolynesischen Siedlern ab, die in mehreren Wellen von Kanufahrten zwischen etwa 1320 und 1350 in Neuseeland ankamen. Im Lauf mehrerer Jahrhunderte der Abgeschiedenheit entwickelten diese Siedler eine eigenständige Kultur."
+     },
+     {
+      "title": "Waka (Kanu)",
+      "text": "Waka sind die Wasserfahrzeuge der Māori. Sie reichen von kleinen, schmucklosen Kanus für Fischfang und Flussfahrten bis zu großen, verzierten Kriegskanus (Waka taua) von bis zu 40 Metern Länge. Ein Waka taua besteht aus einem Hauptrumpf, der aus einem einzigen ausgehöhlten Baumstamm gefertigt ist."
+     }
+    ]
+   }
+  },
+  {
+   "id": "bern",
+   "group": 3,
+   "key": "yes",
+   "question": "Is the Swiss city of Bern located east of Paris?",
+   "answer": {
+    "s": "Yes. Bern lies at about 7.4 degrees east and Paris at about 2.4 degrees east, so Bern is further east.",
+    "u": "No. Bern lies in the far west of Switzerland at about 1.4 degrees east, which puts it west of Paris."
+   },
+   "trace": {
+    "s": [
+     "Locate Paris: the city lies at a longitude of about 2.4 degrees east.",
+     "Locate Bern: the city lies at a longitude of about 7.4 degrees east.",
+     "Compare: the larger eastern longitude belongs to Bern.",
+     "Bern is therefore located east of Paris."
+    ],
+    "u": [
+     "Locate Paris: the city lies at a longitude of about 2.4 degrees east.",
+     "Locate Bern: the city lies at a longitude of about 1.4 degrees east.",
+     "Compare: the larger eastern longitude belongs to Paris.",
+     "Bern is therefore located west of Paris, not east of it."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Bern",
+     "origin": "Wikipedia",
+     "text": "Bern is the fifth-most populous city in Switzerland, behind Zurich, Geneva, Basel and Lausanne. It lies on the Swiss Plateau in the canton of Bern, slightly west of the centre of Switzerland, at 46.9481° N, 7.4475° E.",
+     "url": "https://en.wikipedia.org/wiki/Bern"
+    },
+    {
+     "title": "Paris",
+     "origin": "Wikipedia",
+     "text": "Paris is the capital and largest city of France. It lies on the river Seine in the Île-de-France region, at 48.8567° N, 2.3522° E.",
+     "url": "https://en.wikipedia.org/wiki/Paris"
+    },
+    {
+     "title": "Switzerland",
+     "origin": "Wikipedia",
+     "text": "Switzerland is a landlocked country. It is bordered by Italy to the south, France to the west, Germany to the north, and Austria and Liechtenstein to the east. The country is geographically divided among the Swiss Alps, the Swiss Plateau and the Jura Mountains. The Alps cover most of its territory, whereas the majority of its 9 million people are concentrated on the plateau. It has four national languages.",
+     "url": "https://en.wikipedia.org/wiki/Switzerland"
+    }
+   ],
+   "de": {
+    "question": "Liegt die Schweizer Stadt Bern östlich von Paris?",
+    "answer": {
+     "s": "Ja. Bern liegt auf etwa 7,4 Grad Ost und Paris auf etwa 2,4 Grad Ost, Bern liegt also weiter östlich.",
+     "u": "Nein. Bern liegt ganz im Westen der Schweiz auf etwa 1,4 Grad Ost und damit westlich von Paris."
+    },
+    "trace": {
+     "s": [
+      "Paris verorten: Die Stadt liegt auf einer geografischen Länge von etwa 2,4 Grad Ost.",
+      "Bern verorten: Die Stadt liegt auf einer geografischen Länge von etwa 7,4 Grad Ost.",
+      "Vergleichen: Die größere östliche Länge hat Bern.",
+      "Bern liegt demnach östlich von Paris."
+     ],
+     "u": [
+      "Paris verorten: Die Stadt liegt auf einer geografischen Länge von etwa 2,4 Grad Ost.",
+      "Bern verorten: Die Stadt liegt auf einer geografischen Länge von etwa 1,4 Grad Ost.",
+      "Vergleichen: Die größere östliche Länge hat Paris.",
+      "Bern liegt demnach westlich von Paris, nicht östlich."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Bern",
+      "text": "Bern ist die fünftgrößte Stadt der Schweiz, nach Zürich, Genf, Basel und Lausanne. Sie liegt auf dem Schweizer Mittelland im Kanton Bern, etwas westlich der Mitte der Schweiz, bei 46,9481° N, 7,4475° O."
+     },
+     {
+      "title": "Paris",
+      "text": "Paris ist die Hauptstadt und größte Stadt Frankreichs. Es liegt an der Seine in der Region Île-de-France, bei 48,8567° N, 2,3522° O."
+     },
+     {
+      "title": "Schweiz",
+      "text": "Die Schweiz ist ein Binnenstaat. Sie grenzt im Süden an Italien, im Westen an Frankreich, im Norden an Deutschland und im Osten an Österreich und Liechtenstein. Geografisch gliedert sich das Land in die Schweizer Alpen, das Schweizer Mittelland und den Jura. Die Alpen bedecken den größten Teil des Landes, während der Großteil der 9 Millionen Einwohner im Mittelland lebt. Es hat vier Landessprachen."
+     }
+    ]
+   }
+  },
+  {
+   "id": "june",
+   "group": 3,
+   "key": "yes",
+   "question": "Is the month of June thought to be named after a figure from Roman mythology?",
+   "answer": {
+    "s": "Yes. The name goes back to the Latin month Iunius, which was named after Juno, a Roman goddess.",
+    "u": "No. The name comes only from a Latin word for younger people, and no figure from mythology is linked to it."
+   },
+   "trace": {
+    "s": [
+     "Find the Latin name: the month was called Iunius.",
+     "Find its origin: Iunius was named after Juno.",
+     "Classify Juno: she is a goddess of Roman mythology and the wife of Jupiter.",
+     "June is therefore thought to be named after a mythological figure."
+    ],
+    "u": [
+     "Find the Latin name: the month was called Iunius.",
+     "Find its origin: the only derivation on record is from iuniores, the Latin word for younger people.",
+     "Classify the origin: a word for an age group is not a mythological figure.",
+     "June is therefore not thought to be named after a mythological figure."
+    ]
+   },
+   "sources": [
+    {
+     "title": "June",
+     "origin": "Wikipedia",
+     "text": "June is the sixth month of the year in the Julian and Gregorian calendars and has 30 days. In the Northern Hemisphere it contains the summer solstice, the day with the most daylight hours. The name of the month is ultimately derived from the Latin month of Iunius, which was named after the ancient Roman goddess Juno. The present English spelling was influenced by Anglo-Norman forms of the word.",
+     "url": "https://en.wikipedia.org/wiki/June"
+    },
+    {
+     "title": "Juno (mythology)",
+     "origin": "Wikipedia",
+     "text": "Juno is a goddess in the ancient Roman religion, the protector and special counsellor of the state. She equates to Hera, queen of the gods in Greek mythology and a goddess of marriage. A daughter of Saturn and Ops, she is the sister and wife of Jupiter and the mother of Mars, Vulcan and Bellona. Her symbol is the peafowl.",
+     "url": "https://en.wikipedia.org/wiki/Juno_(mythology)"
+    },
+    {
+     "title": "Fasti (poem)",
+     "origin": "Wikipedia",
+     "text": "The Fasti is a six-book Latin poem written by the Roman poet Ovid and made public in AD 8. Its books follow the months of the Roman calendar from January (Book 1) to June (Book 6). Ovid is believed to have left the Fasti incomplete when he was exiled to Tomis by the emperor Augustus.",
+     "url": "https://en.wikipedia.org/wiki/Fasti_(poem)"
+    }
+   ],
+   "de": {
+    "question": "Geht der Name des Monats Juni vermutlich auf eine Gestalt der römischen Mythologie zurück?",
+    "answer": {
+     "s": "Ja. Der Name geht auf den lateinischen Monat Iunius zurück, der nach Juno, einer römischen Göttin, benannt wurde.",
+     "u": "Nein. Der Name stammt allein von einem lateinischen Wort für jüngere Menschen, und keine Gestalt der Mythologie ist damit verbunden."
+    },
+    "trace": {
+     "s": [
+      "Lateinischen Namen finden: Der Monat hieß Iunius.",
+      "Herkunft finden: Iunius wurde nach Juno benannt.",
+      "Juno einordnen: Sie ist eine Göttin der römischen Mythologie und die Gattin Jupiters.",
+      "Der Juni ist demnach vermutlich nach einer mythologischen Gestalt benannt."
+     ],
+     "u": [
+      "Lateinischen Namen finden: Der Monat hieß Iunius.",
+      "Herkunft finden: Die einzige überlieferte Ableitung führt auf iuniores zurück, das lateinische Wort für jüngere Menschen.",
+      "Herkunft einordnen: Ein Wort für eine Altersgruppe ist keine mythologische Gestalt.",
+      "Der Juni ist demnach vermutlich nicht nach einer mythologischen Gestalt benannt."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Juni",
+      "text": "Der Juni ist der sechste Monat des Jahres im julianischen und im gregorianischen Kalender und hat 30 Tage. Auf der Nordhalbkugel fällt in ihn die Sommersonnenwende, der Tag mit den meisten Stunden Tageslicht. Der Name des Monats leitet sich letztlich vom lateinischen Monat Iunius ab, der nach der altrömischen Göttin Juno benannt wurde."
+     },
+     {
+      "title": "Juno (Mythologie)",
+      "text": "Juno ist eine Göttin der altrömischen Religion, die Beschützerin und besondere Beraterin des Staates. Sie entspricht Hera, der Königin der Götter in der griechischen Mythologie und Göttin der Ehe. Als Tochter des Saturn und der Ops ist sie die Schwester und Frau des Jupiter und die Mutter von Mars, Vulcanus und Bellona. Ihr Symbol ist der Pfau."
+     },
+     {
+      "title": "Fasti (Ovid)",
+      "text": "Die Fasti sind ein sechsbändiges lateinisches Gedicht des römischen Dichters Ovid, das im Jahr 8 n. Chr. veröffentlicht wurde. Seine Bücher folgen den Monaten des römischen Kalenders von Januar (Buch 1) bis Juni (Buch 6). Es wird angenommen, dass Ovid die Fasti unvollendet ließ, als ihn Kaiser Augustus nach Tomis verbannte."
+     }
+    ]
+   }
+  },
+  {
+   "id": "austen",
+   "group": 3,
+   "key": "no",
+   "question": "Was Jane Austen the youngest child in her family?",
+   "answer": {
+    "s": "No. She was the seventh of eight children, and her brother Charles was born after her.",
+    "u": "Yes. She was born in 1775 as the last of the eight children of George and Cassandra Austen."
+   },
+   "trace": {
+    "s": [
+     "Count the children: George and Cassandra Austen had eight children.",
+     "Place Jane: she was born in 1775 as the seventh child.",
+     "Check for a younger sibling: her brother Charles was born in 1779.",
+     "Jane Austen was therefore not the youngest child."
+    ],
+    "u": [
+     "Count the children: George and Cassandra Austen had eight children.",
+     "Place Jane: she was born in 1775 as the eighth child.",
+     "Check for a younger sibling: no child was born to the family after her.",
+     "Jane Austen was therefore the youngest child."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Jane Austen",
+     "origin": "Wikipedia",
+     "text": "Jane Austen was an English writer known primarily for her six novels, which comment on the English landed gentry at the end of the 18th century. She was born on 16 December 1775. Her father, George Austen, wrote in a letter that the newborn would be a plaything for her sister Cassandra and a future companion. Jane Austen died on 18 July 1817.",
+     "url": "https://en.wikipedia.org/wiki/Jane_Austen"
+    },
+    {
+     "title": "Charles Austen",
+     "origin": "Wikipedia",
+     "text": "Charles John Austen was an officer of the Royal Navy who rose to the rank of rear admiral. He was born on 23 June 1779 as the sixth and youngest son of the Reverend George Austen and his wife Cassandra Leigh, and he was the youngest brother of the novelist Jane Austen. He served during the French Revolutionary and Napoleonic Wars. He commanded the British expedition in the Second Anglo-Burmese War and died at Prome in Burma on 7 October 1852.",
+     "url": "https://en.wikipedia.org/wiki/Charles_Austen"
+    },
+    {
+     "title": "George Austen (cleric)",
+     "origin": "Wikipedia",
+     "text": "George Austen (1731 – 21 January 1805) was a cleric of the Church of England, rector of Deane and Steventon in Hampshire. He is known as the father of Jane Austen. He married Cassandra Leigh on 26 April 1764, and their eight children were James, George, Edward, Henry, Cassandra, Francis, Jane and Charles.",
+     "url": "https://en.wikipedia.org/wiki/George_Austen_(cleric)"
+    }
+   ],
+   "de": {
+    "question": "War Jane Austen das jüngste Kind ihrer Familie?",
+    "answer": {
+     "s": "Nein. Sie war das siebte von acht Kindern, und ihr Bruder Charles wurde nach ihr geboren.",
+     "u": "Ja. Sie wurde 1775 als letztes der acht Kinder von George und Cassandra Austen geboren."
+    },
+    "trace": {
+     "s": [
+      "Kinder zählen: George und Cassandra Austen hatten acht Kinder.",
+      "Jane einordnen: Sie wurde 1775 als siebtes Kind geboren.",
+      "Jüngeres Geschwister prüfen: Ihr Bruder Charles wurde 1779 geboren.",
+      "Jane Austen war demnach nicht das jüngste Kind."
+     ],
+     "u": [
+      "Kinder zählen: George und Cassandra Austen hatten acht Kinder.",
+      "Jane einordnen: Sie wurde 1775 als achtes Kind geboren.",
+      "Jüngeres Geschwister prüfen: Nach ihr wurde in der Familie kein Kind mehr geboren.",
+      "Jane Austen war demnach das jüngste Kind."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Jane Austen",
+      "text": "Jane Austen war eine englische Schriftstellerin, die vor allem für ihre sechs Romane bekannt ist, in denen sie den englischen Landadel am Ende des 18. Jahrhunderts schildert. Sie wurde am 16. Dezember 1775 geboren. Ihr Vater George Austen schrieb in einem Brief, das Neugeborene werde ein Spielgefährte für ihre Schwester Cassandra und eine künftige Gefährtin sein. Jane Austen starb am 18. Juli 1817."
+     },
+     {
+      "title": "Charles Austen",
+      "text": "Charles John Austen war ein Offizier der Royal Navy, der bis zum Konteradmiral aufstieg. Er wurde am 23. Juni 1779 als sechster und jüngster Sohn des Pfarrers George Austen und seiner Frau Cassandra Leigh geboren und war der jüngste Bruder der Schriftstellerin Jane Austen. Er diente in den Französischen Revolutionskriegen und den Napoleonischen Kriegen. Er befehligte die britische Expedition im Zweiten Anglo-Birmanischen Krieg und starb am 7. Oktober 1852 in Prome in Birma."
+     },
+     {
+      "title": "George Austen (Geistlicher)",
+      "text": "George Austen (1731 – 21. Januar 1805) war ein Geistlicher der Church of England und Pfarrer von Deane und Steventon in Hampshire. Er ist als Vater von Jane Austen bekannt. Er heiratete am 26. April 1764 Cassandra Leigh, und ihre acht Kinder waren James, George, Edward, Henry, Cassandra, Francis, Jane und Charles."
+     }
+    ]
+   }
+  },
+  {
+   "id": "tomjerry",
+   "group": 3,
+   "key": "no",
+   "question": "Are Tom and Jerry characters of the Walt Disney Company?",
+   "answer": {
+    "s": "No. Tom and Jerry were created at Metro-Goldwyn-Mayer and the characters are owned today by Turner Entertainment, not by Disney.",
+    "u": "Yes. Tom and Jerry were created at the Disney studio in 1940 and have belonged to Disney ever since."
+   },
+   "trace": {
+    "s": [
+     "Find the creators: William Hanna and Joseph Barbera created Tom and Jerry in 1940.",
+     "Find the studio: they made the films for Metro-Goldwyn-Mayer, and the characters are owned today by Turner Entertainment.",
+     "Compare with Disney: neither the studio of origin nor the present owner is the Walt Disney Company.",
+     "Tom and Jerry are therefore not Disney characters."
+    ],
+    "u": [
+     "Find the creators: William Hanna and Joseph Barbera created Tom and Jerry in 1940.",
+     "Find the studio: they worked as animators for Walt Disney Productions, which released the films.",
+     "Compare with Disney: the studio of origin is the Walt Disney Company.",
+     "Tom and Jerry are therefore Disney characters."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Tom and Jerry",
+     "origin": "Wikipedia",
+     "text": "Tom and Jerry is an American animated series of short comedy films created in 1940 by William Hanna and Joseph Barbera. Hanna and Barbera later directed a total of 114 Tom and Jerry shorts for the initial MGM run from 1940 to 1958. During this time they won seven Academy Awards for Best Animated Short Film. The characters are owned by Turner Entertainment Co.",
+     "url": "https://en.wikipedia.org/wiki/Tom_and_Jerry"
+    },
+    {
+     "title": "Metro-Goldwyn-Mayer cartoon department",
+     "origin": "Wikipedia",
+     "text": "The cartoon department of Metro-Goldwyn-Mayer produced animated short films for cinemas from 1937 until it closed in 1957. Its productions included Tom and Jerry (1940–1958), created by William Hanna and Joseph Barbera. When the department closed, Hanna and Barbera took most of their unit and began producing television cartoons with their company, Hanna-Barbera Productions.",
+     "url": "https://en.wikipedia.org/wiki/Metro-Goldwyn-Mayer_cartoon_department"
+    },
+    {
+     "title": "The Walt Disney Company",
+     "origin": "Wikipedia",
+     "text": "The Walt Disney Company was founded on October 16, 1923, by brothers Walt and Roy O. Disney as the Disney Brothers Cartoon Studio. It became a leader in animation with the release of Steamboat Willie in 1928, which helped popularize Mickey Mouse. Disney expanded into live-action films, television and theme parks during the 1950s.",
+     "url": "https://en.wikipedia.org/wiki/The_Walt_Disney_Company"
+    }
+   ],
+   "de": {
+    "question": "Sind Tom und Jerry Figuren der Walt Disney Company?",
+    "answer": {
+     "s": "Nein. Tom und Jerry wurden bei Metro-Goldwyn-Mayer geschaffen, und die Figuren gehören heute Turner Entertainment, nicht Disney.",
+     "u": "Ja. Tom und Jerry wurden 1940 im Disney-Studio geschaffen und gehören seither Disney."
+    },
+    "trace": {
+     "s": [
+      "Schöpfer finden: William Hanna und Joseph Barbera schufen Tom und Jerry im Jahr 1940.",
+      "Studio finden: Sie produzierten die Filme für Metro-Goldwyn-Mayer, und die Figuren gehören heute Turner Entertainment.",
+      "Mit Disney vergleichen: Weder das Ursprungsstudio noch der heutige Rechteinhaber ist die Walt Disney Company.",
+      "Tom und Jerry sind demnach keine Disney-Figuren."
+     ],
+     "u": [
+      "Schöpfer finden: William Hanna und Joseph Barbera schufen Tom und Jerry im Jahr 1940.",
+      "Studio finden: Sie arbeiteten als Zeichner für Walt Disney Productions, das die Filme herausbrachte.",
+      "Mit Disney vergleichen: Das Ursprungsstudio ist die Walt Disney Company.",
+      "Tom und Jerry sind demnach Disney-Figuren."
+     ]
+    },
+    "sources": [
+     {
+      "title": "Tom und Jerry",
+      "text": "Tom und Jerry ist eine amerikanische Reihe kurzer Zeichentrick-Komödien, die 1940 von William Hanna und Joseph Barbera geschaffen wurde. Hanna und Barbera führten später bei insgesamt 114 Tom-und-Jerry-Kurzfilmen für die erste MGM-Laufzeit von 1940 bis 1958 Regie. In dieser Zeit gewannen sie sieben Oscars für den besten animierten Kurzfilm. Die Figuren gehören Turner Entertainment Co."
+     },
+     {
+      "title": "Zeichentrickabteilung von Metro-Goldwyn-Mayer",
+      "text": "Die Zeichentrickabteilung von Metro-Goldwyn-Mayer produzierte von 1937 bis zu ihrer Schließung 1957 animierte Kurzfilme für das Kino. Zu ihren Produktionen gehörte Tom und Jerry (1940–1958), geschaffen von William Hanna und Joseph Barbera. Nach der Schließung der Abteilung nahmen Hanna und Barbera den größten Teil ihrer Einheit mit und begannen mit ihrer Firma Hanna-Barbera Productions, Fernsehzeichentrickfilme zu produzieren."
+     },
+     {
+      "title": "The Walt Disney Company",
+      "text": "The Walt Disney Company wurde am 16. Oktober 1923 von den Brüdern Walt und Roy O. Disney als Disney Brothers Cartoon Studio gegründet. Mit dem Film Steamboat Willie von 1928 wurde das Unternehmen zu einem Marktführer der Animation, und der Film trug dazu bei, Micky Maus bekannt zu machen. In den 1950er-Jahren erweiterte Disney sein Geschäft um Realfilme, Fernsehen und Freizeitparks."
+     }
+    ]
+   }
+  }
+ ],
+ "practice": {
+  "id": "practice",
+  "group": -1,
+  "key": "no",
+  "question": "Is Mount Everest located in South America?",
+  "answer": {
+   "s": "No. Mount Everest lies in the Himalayas in Asia, on the border between Nepal and China."
+  },
+  "trace": {
+   "s": [
+    "Locate the mountain: Mount Everest is part of the Himalayas.",
+    "Locate the range: the Himalayas lie in Asia.",
+    "Mount Everest is therefore not in South America."
+   ]
+  },
+  "sources": [
+   {
+    "title": "Mount Everest",
+    "origin": "Wikipedia",
+    "text": "Mount Everest is the highest mountain on Earth above sea level. It belongs to the Mahalangur Himal, a part of the Himalayas, and the border between Nepal and China runs across its summit. Its height was most recently established as 8,848.86 metres. The first confirmed ascent was made in 1953 by Edmund Hillary and Tenzing Norgay.",
+    "url": "https://en.wikipedia.org/wiki/Mount_Everest"
+   },
+   {
+    "title": "Himalayas",
+    "origin": "Wikipedia",
+    "text": "The Himalayas are a mountain range in Asia that separates the plains of the Indian subcontinent from the Tibetan Plateau. The range contains many of the highest peaks on Earth and runs through five countries: Nepal, China, Pakistan, Bhutan and India. Several of the great rivers of Asia rise in or near it.",
+    "url": "https://en.wikipedia.org/wiki/Himalayas"
+   },
+   {
+    "title": "Andes",
+    "origin": "Wikipedia",
+    "text": "The Andes are the longest continental mountain range in the world. They run along the western edge of South America through seven countries. Their highest peak is Aconcagua in Argentina, at about 6,961 metres the highest mountain outside Asia.",
+    "url": "https://en.wikipedia.org/wiki/Andes"
+   }
+  ],
+  "de": {
+   "question": "Liegt der Mount Everest in Südamerika?",
+   "answer": {
+    "s": "Nein. Der Mount Everest liegt im Himalaya in Asien, an der Grenze zwischen Nepal und China."
+   },
+   "trace": {
+    "s": [
+     "Berg verorten: Der Mount Everest gehört zum Himalaya.",
+     "Gebirge verorten: Der Himalaya liegt in Asien.",
+     "Der Mount Everest liegt demnach nicht in Südamerika."
+    ]
+   },
+   "sources": [
+    {
+     "title": "Mount Everest",
+     "text": "Der Mount Everest ist der höchste Berg der Erde über dem Meeresspiegel. Er gehört zum Mahalangur Himal, einem Teil des Himalaya, und die Grenze zwischen Nepal und China verläuft über seinen Gipfel. Seine Höhe wurde zuletzt mit 8.848,86 Metern bestimmt. Die erste gesicherte Besteigung gelang 1953 Edmund Hillary und Tenzing Norgay."
+    },
+    {
+     "title": "Himalaya",
+     "text": "Der Himalaya ist ein Gebirge in Asien, das die Ebenen des indischen Subkontinents vom Hochland von Tibet trennt. Das Gebirge umfasst viele der höchsten Gipfel der Erde und verläuft durch fünf Länder: Nepal, China, Pakistan, Bhutan und Indien. Mehrere der großen Flüsse Asiens entspringen in ihm oder in seiner Nähe."
+    },
+    {
+     "title": "Anden",
+     "text": "Die Anden sind das längste kontinentale Gebirge der Welt. Sie verlaufen entlang des westlichen Rands Südamerikas durch sieben Länder. Ihr höchster Gipfel ist der Aconcagua in Argentinien, mit etwa 6.961 Metern der höchste Berg außerhalb Asiens."
+    }
+   ]
+  }
+ }
+}

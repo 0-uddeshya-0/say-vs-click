@@ -35,7 +35,12 @@ details.about { border:2px solid var(--line); border-radius:var(--r); padding:10
 .reader { position:fixed; inset:0; background:rgba(30,29,26,.55); display:flex; align-items:center; justify-content:center; padding:24px; z-index:10; } .reader[hidden] { display:none; }
 .reader-box { background:var(--card); border:2px solid var(--line); border-radius:var(--r); box-shadow:8px 8px 0 var(--ink); max-width:720px; width:100%; max-height:86vh; display:flex; flex-direction:column; }
 .reader-head { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; padding:16px 20px; border-bottom:2px solid var(--line); background:var(--sky); border-radius:6px 6px 0 0; }
-.reader-title { font-weight:700; font-size:18px; } .reader-text { padding:20px 22px 26px; overflow:auto; font-size:17px; line-height:1.65; }
+.reader-title { font-weight:700; font-size:18px; } .reader-scroll { overflow:auto; padding:20px 22px 22px; } .reader-text { font-size:17px; line-height:1.65; }
+.reader-link { display:inline-block; margin-top:18px; padding:8px 14px; border:2px solid var(--line); border-radius:var(--r); background:var(--butter); box-shadow:var(--sh2); font-weight:600; font-size:15px; text-decoration:none; transition:transform .06s, box-shadow .06s; } .reader-link[hidden] { display:none; }
+.reader-link:hover, .reader-link:focus-visible { transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--ink); outline:none; }
+.lang { display:flex; border:2px solid var(--line); border-radius:var(--r); overflow:hidden; box-shadow:var(--sh2); } .lang[hidden] { display:none; }
+.lang button { font:inherit; font-size:12px; font-weight:700; letter-spacing:.04em; padding:5px 10px; border:0; background:var(--card); color:var(--ink); cursor:pointer; } .lang button + button { border-left:2px solid var(--line); }
+.lang button.on { background:var(--lilac); } .lang button:focus-visible { outline:2px solid var(--ink); outline-offset:-4px; }
 /* questionnaire */
 .qrow { display:flex; gap:14px; padding:16px 0; border-top:2px dashed #cfc8b6; } .qrow:first-of-type { border-top:0; } .qrow.missing .qn { background:var(--rose); }
 .qn { flex:0 0 34px; height:34px; border:2px solid var(--line); border-radius:99px; display:flex; align-items:center; justify-content:center; font-weight:700; background:var(--butter); } .qb { flex:1; min-width:0; } .qt { font-weight:700; margin-bottom:4px; }
