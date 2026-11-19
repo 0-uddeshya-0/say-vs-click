@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f4f0e6">
 <meta name="robots" content="noindex">
 <title>Judging AI answers: a research study</title>
 <link rel="stylesheet" href="styles.css">
@@ -10,8 +11,8 @@
 <body>
 <header class="top">
   <div class="brand"><img id="logo" src="assets/hnu-logo.png" alt="Hochschule Neu-Ulm" hidden><span id="brand">Research study</span></div>
-  <div class="prog"><span id="progress"></span><div id="bar" class="bar" hidden><i id="barfill"></i></div>
-    <div id="lang" class="lang" role="group" aria-label="Language"><button type="button" data-l="en" lang="en" title="English">EN</button><button type="button" data-l="de" lang="de" title="Deutsch">DE</button></div></div>
+  <div id="lang" class="lang" role="group" aria-label="Language"><button type="button" data-l="en" lang="en" title="English">EN</button><button type="button" data-l="de" lang="de" title="Deutsch">DE</button></div>
+  <div class="prog" id="prog" hidden><span id="progress"></span><div id="bar" class="bar" hidden><i id="barfill"></i></div></div>
 </header>
 <main id="app"></main>
 <footer class="foot"><span id="foot-text">Master’s thesis study · Hochschule Neu-Ulm</span> · <a id="mail" href="#"></a></footer>

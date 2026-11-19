@@ -31,7 +31,7 @@ const EVENT_COLS = ['session_id','seq','t','wall','trial','item','type','visible
 const TEXT_COLS = ['received_at','session_id','final','study_version','items_version','src','started_at','lang','lang_start','lang_browser','window','user_agent',
   'why_open','why_closed','trace_read','trace_effect','ai_use','habit_check','age','gender','education','english','lookup','comment','raw_json',
   'item','key','decision','open_order','link_order','content_lang','wall','type','payload_json'];
-const MAX_POST = 300000;     // characters; a complete record with all events is about 100,000 at most
+const MAX_POST = 300000;     // characters; a complete record with all events is usually 60,000 to 150,000; the page trims event types of lower priority above 270,000
 const ITEM_COLS = ['saved_at','version','note','n_chunks'];
 const CHUNK = 40000;         // a cell holds at most 50,000 characters
 

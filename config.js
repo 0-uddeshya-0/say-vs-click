@@ -6,7 +6,7 @@
  *   SHOW_LOGO      Show the university logo (assets/hnu-logo.png) in the page header.
  *   LANGUAGES      Languages offered. The first visit starts in German when the browser language is German,
  *                  otherwise in English; the participant can switch at any time. ["en"] hides the switch.
- *   MIN_WIDTH      Minimum window width in pixels (phones are turned away).
+ *   MIN_WIDTH      Minimum window width in pixels. Phones, tablets and computers are all accepted; only a window narrower than this is turned away.
  */
 const CONFIG = {
   ENDPOINT_URL: "https://script.google.com/macros/s/AKfycbwa3h1yjsMKIgUfV0SqqofQBoUASGQgcKvmrSInK6XFwYGeeyr3swBz0u2q4RmFO-3r-w/exec",
@@ -14,7 +14,7 @@ const CONFIG = {
   EMAIL: "uddeshya.singh@student.hnu.de",
   SHOW_LOGO: true,
   LANGUAGES: ["en", "de"],
-  MIN_WIDTH: 900,
-  STUDY_VERSION: "v2.4-2026-11-17"
+  MIN_WIDTH: 300,
+  STUDY_VERSION: "v2.5-2026-11-19"
 };
 if (typeof module !== "undefined") module.exports = { CONFIG };

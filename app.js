@@ -115,8 +115,8 @@
       AWAY.link = null;
     }
   }
-  document.addEventListener("visibilitychange", () => { log("visibility", { state: document.visibilityState }); if (R.open) R.tick(); if (document.visibilityState === "hidden" && !S.done) persist(); syncAway(); });
-  window.addEventListener("blur", () => { log("window_blur"); if (R.open) R.tick(); syncAway(); }); window.addEventListener("focus", () => { log("window_focus"); if (R.open) R.tick(); syncAway(); });
+  document.addEventListener("visibilitychange", () => { log("visibility", { state: document.visibilityState }); EXP.tick(); if (R.open) R.tick(); if (document.visibilityState === "hidden" && !S.done) persist(); syncAway(); });
+  window.addEventListener("blur", () => { log("window_blur"); EXP.tick(); if (R.open) R.tick(); syncAway(); }); window.addEventListener("focus", () => { log("window_focus"); EXP.tick(); if (R.open) R.tick(); syncAway(); });
 
   /** Per-participant totals, stored with the session so that one row describes what a person did. */
   function summary() {
@@ -132,11 +132,20 @@
              preview: !CONFIG.ENDPOINT_URL, user_agent: navigator.userAgent, screen: screen.width + "x" + screen.height,
              window: innerWidth + "x" + innerHeight, language: navigator.language, tz_offset_min: new Date().getTimezoneOffset() }, summary());
   }
+  // the server refuses a record above 300,000 characters; the finished questions and the answers are never dropped, event types of lower priority go first
+  const MAX_BODY = 270000, LOW_EVENTS = { text_select: 1, copy: 1, contextmenu: 1, viewport: 1, zoom: 1, connectivity: 1, reader_scroll: 1, source_rendered: 1, visibility: 1, window_blur: 1, window_focus: 1 };
+  const CORE_EVENTS = { session_start: 1, device: 1, start_info: 1, consent_given: 1, screen: 1, comprehension: 1, trial_start: 1, trial_restart: 1, trial_end: 1, source_open: 1, source_close: 1, source_link_click: 1, source_link_contextmenu: 1, source_link_return: 1, decision_select: 1, decision_confirm: 1, away_start: 1, away_end: 1, q_answer: 1, questionnaire_submit: 1, session_end: 1, resume: 1, language_switch: 1, pagehide: 1, pageshow: 1, device_gate: 1, about_toggle: 1 };
   function payload(final, compact) {
-    const build = ev => JSON.stringify({ meta: Object.assign(meta(), { final: !!final, n_trials_done: trialRows.length }), trials: trialRows, questionnaire: Q, events: ev });
-    return compact ? build([]) : build(events);   // a beacon is limited to about 64 KB, and the server stores events only with a complete record
+    const build = (ev, dropped) => JSON.stringify({ meta: Object.assign(meta(), { final: !!final, n_trials_done: trialRows.length, events_dropped: dropped || 0 }), trials: trialRows, questionnaire: Q, events: ev });
+    if (compact) return build([]);   // a beacon is limited to about 64 KB, and the server stores events only with a complete record
+    let out = build(events);
+    if (out.length > MAX_BODY) { let ev = events.filter(e => !LOW_EVENTS[e.type]); out = build(ev, events.length - ev.length);
+      if (out.length > MAX_BODY) { ev = events.filter(e => CORE_EVENTS[e.type]); out = build(ev, events.length - ev.length);
+        if (out.length > MAX_BODY) out = build([], events.length); } }
+    return out;
   }
-  window.addEventListener("pagehide", () => {
+  window.addEventListener("pagehide", e => {
+    log("pagehide", { persisted: !!e.persisted }); if (!S.done) persist();
     if (!CONFIG.ENDPOINT_URL) return;
     let body = null;
     if (S.done) {
@@ -151,31 +160,36 @@
 
   // ------------------------------------------------------------ helpers
   function h(html, keepScroll) { app.innerHTML = html; if (!keepScroll) window.scrollTo(0, 0); }
-  function progress(txt, frac) { $("#progress").textContent = txt || ""; $("#bar").hidden = frac === undefined; if (frac !== undefined) $("#barfill").style.width = Math.round(100 * frac) + "%"; }
+  function progress(txt, frac) { $("#prog").hidden = !txt && frac === undefined; $("#progress").textContent = txt || ""; $("#bar").hidden = frac === undefined; if (frac !== undefined) $("#barfill").style.width = Math.round(100 * frac) + "%"; }
 
   // ------------------------------------------------------------ source reader with focused-time accounting
-  const R = { open: false, idx: null, item: null, openedAt: 0, visibleMs: 0, lastTick: 0, maxScroll: 0, links: 0,
+  const R = { open: false, idx: null, item: null, openedAt: 0, visibleMs: 0, lastTick: 0, maxScroll: 0, links: 0, marks: {},
     tick() { const n = now(); if (this.wasVisible) this.visibleMs += n - this.lastTick; this.lastTick = n; this.wasVisible = document.visibilityState === "visible" && document.hasFocus(); },
     paint() {
       const src = loc(this.item).sources[this.idx], safe = /^https:\/\/[^\s]+$/i.test(src.url || "");
       $("#reader-title").textContent = "[" + (this.idx + 1) + "] " + src.title; $("#reader-origin").textContent = T("reader_origin", { title: src.article });
-      $("#reader-text").textContent = src.text; const a = $("#reader-link"); a.hidden = !safe; if (safe) { a.href = src.url; a.textContent = T("reader_link") + " ↗"; } else a.removeAttribute("href");
+      $("#reader-text").textContent = src.text; const a = $("#reader-link"); a.hidden = !safe; if (safe) { a.href = src.url; a.textContent = T("reader_link") + "\u00a0↗"; } else a.removeAttribute("href");
     },
-    show(idx, item, opener) {
-      if (!cur) return; if (this.open) this.close("switch");
-      this.open = true; this.idx = idx; this.item = item; this.opener = opener || null; this.openedAt = this.lastTick = now(); this.visibleMs = 0; this.maxScroll = 0; this.links = 0; this.wasVisible = document.visibilityState === "visible" && document.hasFocus();
+    show(idx, item, opener, how) {
+      if (!cur) return; if (this.open) this.close("switch"); EXP.tick();
+      this.open = true; this.marks = {}; document.body.classList.add("reading"); EXP.tick(); this.idx = idx; this.item = item; this.opener = opener || null; this.openedAt = this.lastTick = now(); this.visibleMs = 0; this.maxScroll = 0; this.links = 0; this.wasVisible = document.visibilityState === "visible" && document.hasFocus();
       app.inert = true; app.setAttribute("aria-hidden", "true");
+      if (!this.pushed) { try { history.pushState({ svcReader: 1 }, ""); this.pushed = true; } catch (e) { /* ignore */ } }
       this.paint(); reader.hidden = false; $("#reader-scroll").scrollTop = 0; $("#reader-close").focus();
-      requestAnimationFrame(() => log("source_rendered", { source: idx + 1 }));
-      log("source_open", { source: idx + 1, lang: S.lang });
+      requestAnimationFrame(() => { const sc = $("#reader-scroll"); log("source_rendered", { source: idx + 1, chars: ($("#reader-text").textContent || "").length, scrollable: sc.scrollHeight > sc.clientHeight + 2 }); });
+      log("source_open", { source: idx + 1, lang: S.lang, via: how || null, n_open: cur.opens.length });
     },
     close(how) {
-      if (!this.open) return; this.tick(); this.open = false; reader.hidden = true; app.inert = false; app.removeAttribute("aria-hidden");
+      if (!this.open) return; this.tick();
+      if (this.pushed && how !== "back" && how !== "switch") { this.pushed = false; this.skipPop = true; setTimeout(() => { R.skipPop = false; }, 600); try { history.back(); } catch (e) { /* ignore */ } } this.open = false; reader.hidden = true; app.inert = false; app.removeAttribute("aria-hidden"); document.body.classList.remove("reading"); EXP.tick();
       const rec = { source: this.idx + 1, open_ms: now() - this.openedAt, visible_ms: this.visibleMs, max_scroll: this.maxScroll, link_clicks: this.links, closed_by: how };
       log("source_close", rec); if (cur) cur.sourceVisits.push(rec);
       if (this.opener && document.contains(this.opener)) { try { this.opener.focus(); } catch (e) { /* ignore */ } } this.opener = null;
     } };
   $("#reader-close").addEventListener("click", () => R.close("button"));
+  // the Back button or gesture closes the source sheet and keeps the participant in the study
+  window.addEventListener("popstate", () => { if (R.skipPop) { R.skipPop = false; return; } if (R.open && R.pushed) { R.pushed = false; R.close("back"); } });
+  try { if (history.state && history.state.svcReader) history.replaceState(null, ""); } catch (e) { /* ignore */ }
   reader.addEventListener("click", e => { if (e.target === reader) R.close("backdrop"); });
   document.addEventListener("keydown", e => {
     if (!R.open) return;
@@ -185,16 +199,60 @@
       if (e.shiftKey && i <= 0) { e.preventDefault(); f[f.length - 1].focus(); } else if (!e.shiftKey && i === f.length - 1) { e.preventDefault(); f[0].focus(); } else if (i < 0) { e.preventDefault(); f[0].focus(); }
     }
   });
-  $("#reader-scroll").addEventListener("scroll", e => { const el = e.target; const d = el.scrollHeight - el.clientHeight; if (d > 0) R.maxScroll = Math.max(R.maxScroll, Math.round(100 * el.scrollTop / d)); });
-  function linkClick(how) {
+  $("#reader-scroll").addEventListener("scroll", e => { const el = e.target; const d = el.scrollHeight - el.clientHeight; if (d > 0) { R.maxScroll = Math.max(R.maxScroll, Math.round(100 * el.scrollTop / d)); [25, 50, 75, 100].forEach(m => { if (R.maxScroll >= m && !R.marks[m]) { R.marks[m] = 1; log("reader_scroll", { source: R.idx + 1, pct: m }); } }); } });
+  function linkClick(how, e) {
     if (!R.open) return; const n = R.idx + 1; R.links++; if (cur) cur.links.push(n);
-    linkPending = { source: n, at: now(), sticky: how !== "click" }; log("source_link_click", { source: n, how: how, url: $("#reader-link").href });
+    linkPending = { source: n, at: now(), sticky: how !== "click" }; log("source_link_click", { source: n, how: how, url: $("#reader-link").href, via: via(e) });
   }
-  $("#reader-link").addEventListener("click", e => linkClick((e.ctrlKey || e.metaKey || e.shiftKey) ? "modified_click" : "click"));
-  $("#reader-link").addEventListener("auxclick", e => { if (e.button === 1) linkClick("middle_click"); });
+  $("#reader-link").addEventListener("click", e => linkClick((e.ctrlKey || e.metaKey || e.shiftKey) ? "modified_click" : "click", e));
+  $("#reader-link").addEventListener("auxclick", e => { if (e.button === 1) linkClick("middle_click", e); });
   $("#reader-link").addEventListener("contextmenu", () => { if (cur) cur.menus++; log("source_link_contextmenu", { source: R.idx + 1 }); });
   document.querySelectorAll("#lang button").forEach(b => b.addEventListener("click", () => setLang(b.dataset.l)));
   $("#lang").hidden = LANGS.length < 2;
+
+
+  // ------------------------------------------------------------ interaction context: pointer, device, viewport, exposure, selection, errors
+  // Everything here only adds events; the stored columns do not change. What is recorded is described to participants on the first page.
+  let lastPointer = null, selN = 0, ctxN = 0, selTotal = 0, copyN = 0, vpN = 0, zoomN = 0, errN = 0, netN = 0;
+  document.addEventListener("pointerdown", e => { lastPointer = e.pointerType || null; }, true);
+  /** How an element was activated: touch, mouse, pen or keyboard. */
+  const via = e => (e && e.type === "click" && e.detail === 0) ? "keyboard" : (lastPointer || "unknown");
+  function deviceInfo() {
+    const mm = q => { try { return matchMedia(q).matches; } catch (e) { return null; } }, vv = window.visualViewport;
+    return { touch_points: navigator.maxTouchPoints || 0, pointer_coarse: mm("(pointer: coarse)"), hover: mm("(hover: hover)"), dpr: window.devicePixelRatio || 1, vw: innerWidth, vh: innerHeight,
+      sw: screen.width, sh: screen.height, orient: innerWidth >= innerHeight ? "landscape" : "portrait", zoom: vv ? Math.round(vv.scale * 100) / 100 : 1, standalone: mm("(display-mode: standalone)") };
+  }
+  let vpTimer = null, vpLast = { w: innerWidth, o: innerWidth >= innerHeight }, zoomTimer = null, zoomLast = 1;
+  const vpCheck = () => { vpTimer = null; const o = innerWidth >= innerHeight; if ((o !== vpLast.o || Math.abs(innerWidth - vpLast.w) >= 20) && vpN++ < 30) log("viewport", { w: innerWidth, h: innerHeight, orient: o ? "landscape" : "portrait" }); vpLast = { w: innerWidth, o: o }; };
+  window.addEventListener("resize", () => { clearTimeout(vpTimer); vpTimer = setTimeout(vpCheck, 400); }); window.addEventListener("orientationchange", () => { clearTimeout(vpTimer); vpTimer = setTimeout(vpCheck, 400); });
+  if (window.visualViewport) visualViewport.addEventListener("resize", () => { clearTimeout(zoomTimer); zoomTimer = setTimeout(() => { const z = Math.round(visualViewport.scale * 100) / 100; if (Math.abs(z - zoomLast) >= 0.05) { zoomLast = z; if (zoomN++ < 30) log("zoom", { scale: z }); } }, 400); });
+  window.addEventListener("online", () => { if (netN++ < 20) log("connectivity", { online: true }); }); window.addEventListener("offline", () => { if (netN++ < 20) log("connectivity", { online: false }); });
+  window.addEventListener("pageshow", e => { if (e.persisted) log("pageshow", { persisted: true }); });
+  const logErr = (kind, msg, src) => { if (errN++ < 10) log("client_error", { kind: kind, message: String(msg || "").replace(/[a-z-]+:\/\/\S+/gi, "[url]").slice(0, 200), src: src || null }); };
+  window.addEventListener("error", e => { const f = e.filename || ""; if (f && f.indexOf(location.origin) !== 0) return;   // errors of browser extensions and other foreign scripts are not recorded
+    logErr("error", e.message, f.split("?")[0].split("#")[0].split("/").pop() + ":" + (e.lineno || "")); });
+  window.addEventListener("unhandledrejection", e => logErr("rejection", e.reason && e.reason.message ? e.reason.message : e.reason));
+  window.addEventListener("scroll", () => { if (!cur || R.open) return; const d = document.documentElement.scrollHeight - innerHeight; if (d > 0) cur.pageScroll = Math.max(cur.pageScroll || 0, Math.round(100 * window.scrollY / d)); }, { passive: true });
+  // selecting, copying and context menus: where and how much, never the text itself
+  const AREAS = [[".question", "question"], [".answer", "answer"], [".sources", "sources"], [".trace", "trace"], [".decision", "decision"], ["#reader-text", "source_text"], ["#reader", "reader"], ["main", "page"]];
+  function areaOf(node) { const el = node && (node.nodeType === 1 ? node : node.parentElement); if (!el || !el.closest) return null; for (let i = 0; i < AREAS.length; i++) if (el.closest(AREAS[i][0])) return AREAS[i][1]; return "other"; }
+  let selTimer = null;
+  document.addEventListener("selectionchange", () => { clearTimeout(selTimer); selTimer = setTimeout(() => { const g = document.getSelection(); if (!g || g.isCollapsed) return; const n = g.toString().trim().length; if (n < 3 || selN >= 8 || selTotal >= 60) return; selN++; selTotal++; log("text_select", { area: areaOf(g.anchorNode), chars: n }); }, 700); });
+  document.addEventListener("copy", () => { if (copyN++ >= 30) return; const g = document.getSelection(); log("copy", { area: g ? areaOf(g.anchorNode) : null, chars: g ? g.toString().length : 0 }); });
+  document.addEventListener("contextmenu", e => { if (e.target.closest && e.target.closest("#reader-link")) return; if (ctxN++ < 12) log("contextmenu", { area: areaOf(e.target), via: via(e) }); });
+  // time on screen per part of the question page: counted while the page is visible and focused and the reader is closed
+  const EXP = { names: ["question", "answer", "sources", "trace", "decision"], sel: { question: ".card.q", answer: ".answer", sources: ".sources", trace: ".trace", decision: ".decision" }, vis: {}, ms: {}, first: {}, last: 0, active: false, obs: null, t0: 0,
+    isActive() { return document.visibilityState === "visible" && document.hasFocus() && !R.open; },
+    begin() { this.vis = {}; this.ms = {}; this.first = {}; this.t0 = this.last = now(); this.active = this.isActive(); },
+    attach() {
+      this.tick(); if (this.obs) this.obs.disconnect(); this.obs = null; this.vis = {}; if (!("IntersectionObserver" in window)) return;
+      this.obs = new IntersectionObserver(list => { this.tick(); list.forEach(en => { const nm = en.target.dataset.exp, big = en.intersectionRect.height >= 0.5 * innerHeight;
+        this.vis[nm] = en.isIntersecting && (en.intersectionRatio >= 0.5 || big); if (this.vis[nm] && this.first[nm] === undefined) this.first[nm] = Math.round(now() - this.t0); }); }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+      this.names.forEach(n => { const el = app.querySelector(this.sel[n]); if (el) { el.dataset.exp = n; this.obs.observe(el); } });
+    },
+    tick() { const n = now(); if (this.active) for (const k in this.vis) if (this.vis[k]) this.ms[k] = (this.ms[k] || 0) + (n - this.last); this.last = n; this.active = this.isActive(); },
+    stop() { if (this.obs) this.obs.disconnect(); this.obs = null; },
+    result() { this.tick(); const v = {}; this.names.forEach(k => { v[k] = Math.round(this.ms[k] || 0); }); return { view_ms: v, first_seen_ms: this.first }; } };
 
   // ------------------------------------------------------------ screens
   const card = (hd, p) => '<div class="card"><h1>' + T(hd) + '</h1><p>' + T(p) + '</p></div>';
@@ -212,7 +270,7 @@
       progress("");
       h('<div class="card hero"><div class="tag">' + T("hero_tag") + '</div><h1>' + T("hero_h") + '</h1><p class="lead">' + T("hero_p") + '</p></div>' +
         '<div class="cols3"><div class="card mini c1"><b>' + T("m1_h") + '</b><span>' + T("m1_p") + '</span></div><div class="card mini c2"><b>' + T("m2_h") + '</b><span>' + T("m2_p") + '</span></div><div class="card mini c3"><b>' + T("m3_h") + '</b><span>' + T("m3_p") + '</span></div></div>' +
-        '<div class="card"><h2 style="margin-top:0">' + T("data_h") + '</h2><p>' + T("data_p") + '</p>' + about() +
+        '<div class="card"><h2 style="margin-top:0">' + T("data_h") + '</h2><ul class="facts"><li>' + T("data_1") + '</li><li>' + T("data_2") + '</li><li>' + T("data_3") + '</li><li>' + T("data_4") + '</li></ul>' + about() +
         '<label class="check"><input type="checkbox" id="c1"><span>' + T("consent_check") + '</span></label><button class="btn primary big" id="go" disabled>' + T("consent_go") + '</button></div>', re);
       $("#c1").checked = st.checked; $("#go").disabled = !st.checked; $("#about").open = st.about;
       $("#about").addEventListener("toggle", e => { st.about = e.target.open; log("about_toggle", { open: st.about }); });
@@ -246,8 +304,14 @@
     const it = practice ? PRACT : byId[t.item];
     const v = t.supported ? "s" : "u";
     inTrials = true;
-    cur = { index: t.index, item: t.item, sourceVisits: [], opens: [], links: [], awayMs: 0, awayN: 0, linkAwayMs: 0, startedAt: now(), firstChoiceAt: null, changes: 0, choice: null, langSwitches: 0, menus: 0, langStart: S.lang, restarts: 0 };
+    cur = { index: t.index, item: t.item, sourceVisits: [], opens: [], links: [], awayMs: 0, awayN: 0, linkAwayMs: 0, startedAt: now(), pageScroll: 0, firstChoiceAt: null, changes: 0, choice: null, langSwitches: 0, menus: 0, langStart: S.lang, restarts: 0 };
     const starts = S.starts[t.item + "#" + t.index] = (S.starts[t.item + "#" + t.index] || 0) + 1; cur.restarts = starts - 1; save(); linkPending = null;
+    // after a reload (or a tab that the phone discarded while a source was being read) what was done in this question before the reload still counts
+    if (cur.restarts) events.forEach(ev => { if (ev.trial === t.index && ev.item === t.item && ev.payload) {
+      if (ev.type === "source_open") cur.opens.push(ev.payload.source); else if (ev.type === "source_link_click") cur.links.push(ev.payload.source);
+      else if (ev.type === "source_close") cur.sourceVisits.push(ev.payload); else if (ev.type === "source_link_contextmenu") cur.menus++;
+      else if (ev.type === "away_end") { cur.awayMs += ev.payload.ms || 0; cur.awayN++; if (ev.payload.after_link) cur.linkAwayMs += ev.payload.ms || 0; } } });
+    selN = 0; ctxN = 0;
     log("trial_start", { trace: t.trace, supported: t.supported, practice: practice, lang: S.lang, restart: cur.restarts });
     if (cur.restarts) log("trial_restart", { n: cur.restarts });
     go("trial", re => {
@@ -260,13 +324,14 @@
         (t.trace ? '<div class="card trace"><div class="label">' + T("l_trace") + '</div><ol>' + c.trace[v].map(x => '<li>' + esc(x) + '</li>').join("") + '</ol></div>' : '') +
         '<div class="card decision"><span>' + T("dec") + '</span><button class="btn choice acc' + (cur.choice === "accept" ? " sel" : "") + '" data-d="accept">' + T("acc") + '</button><button class="btn choice rej' + (cur.choice === "reject" ? " sel" : "") + '" data-d="reject">' + T("rej") + '</button>' +
         '<button class="btn primary" id="confirm"' + (cur.choice ? "" : " disabled") + '>' + T("confirm") + '</button></div>', re);
-      app.querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { const k = +b.dataset.k; cur.opens.push(k + 1); R.show(k, it, b); }));
-      app.querySelectorAll(".choice").forEach(b => b.addEventListener("click", () => {
+      app.querySelectorAll(".chip").forEach(b => b.addEventListener("click", e => { const k = +b.dataset.k; cur.opens.push(k + 1); R.show(k, it, b, via(e)); }));
+      if (!re) EXP.begin(); EXP.attach();
+      app.querySelectorAll(".choice").forEach(b => b.addEventListener("click", e => {
         if (cur.choice && cur.choice !== b.dataset.d) cur.changes++; cur.choice = b.dataset.d; if (cur.firstChoiceAt === null) cur.firstChoiceAt = now();
-        app.querySelectorAll(".choice").forEach(x => x.classList.toggle("sel", x === b)); $("#confirm").disabled = false; log("decision_select", { decision: cur.choice });
+        app.querySelectorAll(".choice").forEach(x => x.classList.toggle("sel", x === b)); $("#confirm").disabled = false; log("decision_select", { decision: cur.choice, via: via(e), changed: cur.changes });
       }));
-      $("#confirm").addEventListener("click", () => {
-        if (R.open) R.close("confirm");
+      $("#confirm").addEventListener("click", e => {
+        if (R.open) R.close("confirm"); const how = via(e);
         const end = now(), choice = cur.choice; const visits = cur.sourceVisits; const distinct = Array.from(new Set(cur.opens)), linksDistinct = Array.from(new Set(cur.links));
         const answerSays = t.supported ? it.key : (it.key === "yes" ? "no" : "yes");
         const judgedCorrect = (choice === "accept") === (answerSays === it.key);
@@ -277,7 +342,8 @@
           verification_success: (!t.supported && choice === "reject" && distinct.length > 0) ? 1 : 0,
           lang: S.lang, lang_start: cur.langStart, content_lang: (S.lang === "de" && it.de) ? "de" : "en", lang_changed: cur.langSwitches > 0 ? 1 : 0, restarts: cur.restarts, n_link_clicks: cur.links.length, n_link_menu: cur.menus, n_links_distinct: linksDistinct.length, link_order: cur.links.join(">"),
           link_away_ms: cur.linkAwayMs, away_ms: cur.awayMs, n_away: cur.awayN };
-        log("decision_confirm", { decision: choice, correct: judgedCorrect }); log("trial_end", { trial_index: t.index, decision: choice, correct: row.correct, trial_ms: row.trial_ms });
+        log("decision_confirm", { decision: choice, correct: judgedCorrect, via: how });
+        log("trial_end", Object.assign({ trial_index: t.index, decision: choice, correct: row.correct, trial_ms: row.trial_ms, page_scroll_max: cur.pageScroll }, EXP.result())); EXP.stop();
         if (!practice) { trialRows.push(row); persist(); } cur = null; linkPending = null;
         if (practice) return screenAfterPractice();
         if (i + 1 < TRIALS.length) return runTrial(i + 1);
@@ -389,6 +455,7 @@
   }
   paintChrome();
   if (WAS_DONE) { go("done", () => h(card("done_h", "done_p"))); resendFinal(); return; }
+  log("device", deviceInfo());
   if (innerWidth >= CONFIG.MIN_WIDTH && trialRows.length > 0) { prepare(true).then(screenResume); return; }
   log("session_start", meta());
   screenGate();

@@ -100,9 +100,25 @@ of the texts shown (`lang_start`, `lang`, `content_lang`), how often the questio
 (`restarts`), clicks on the link to the full Wikipedia article (`n_link_clicks`, `n_link_menu` for right-click
 or context-menu use, `link_order`), and the time the study page was in the background (`away_ms`, `n_away`;
 `link_away_ms` for the time away right after a click on the article link).
-Per event (`events`): every source open and close, decision click, screen change, language switch, link click,
-tab switch and window blur, with a millisecond timestamp. The final questionnaire is closed throughout (scales
-and multiple choice on three short pages; one optional comment field).
+Per event (`events`): every source open and close (`source_open` with the input type `via` and the running count
+`n_open`, `source_rendered` with text length and whether it scrolls, `source_close`), how far the reader was scrolled
+(`reader_scroll` at 25, 50, 75 and 100 %), decision click and confirmation (with `via`), screen change, language
+switch, link click (with `via`), tab switch and window blur, with a millisecond timestamp. Every `trial_end` carries
+`view_ms` (time each region of the question page was in view while the page was visible and in focus and no source was open:
+question, answer, sources, trace, decision; counted while the page is visible and in focus and no source is open), `first_seen_ms` (when each region first came into view) and
+`page_scroll_max` (deepest page scroll in percent). Device and environment events: `device` (touch points, coarse
+pointer, hover, pixel ratio, window and screen size, orientation, zoom, standalone mode), `viewport` (window size or
+rotation change), `zoom` (pinch zoom), `connectivity` (offline and online), `pagehide` and `pageshow`, and
+`client_error` (script errors, at most 10 per session). Interaction with the text is logged without its content:
+`text_select` (area and number of characters), `copy` and `contextmenu`. `via` is `touch`, `mouse`, `pen` or
+`keyboard`. Several event types are capped per page load (a reload starts the count again): `viewport` and `zoom` 30 each, `connectivity` 20,
+`copy` 30, `client_error` 10, `text_select` 8 per question and 60 in total, `contextmenu` 12 per question. Errors of browser
+extensions and other foreign scripts are not recorded, and addresses in error messages are replaced by `[url]`. A complete record above 270,000
+characters (the server refuses 300,000) is trimmed before it is sent: first the event types of lower priority
+(`text_select`, `copy`, `contextmenu`, `viewport`, `zoom`, `connectivity`, `reader_scroll`, `source_rendered`, `visibility`,
+`window_blur`, `window_focus`), then everything except the core events, then all events; the finished questions and the
+questionnaire are never dropped, and `events_dropped` in the record shows how many events were left out. The final questionnaire is closed throughout (scales and multiple choice on three short
+pages; one optional comment field).
 
 Per session (`sessions`): the totals of the above, the questionnaire answers, the item-set version, the language
 of the browser, the browser identification string and the window size. No names, e-mail addresses or IP
@@ -112,7 +128,8 @@ only see that the link was followed and for how long the study page stayed in th
 A participant who leaves early (closes the page after at least one answered question) leaves a row in
 `sessions` with `final = FALSE` and the finished questions in `trials_partial`. If the same browser later
 finishes the study, the final record replaces the partial one. A reload resumes at the current question
-(a restarted question is counted in `restarts`). A browser that has finished is not admitted a second time. Only
+(a restarted question is counted in `restarts`; the sources opened, the link clicks and the time away before the reload are
+carried over from the stored log, so that a phone that discards the page while a source article is read does not lose them). A browser that has finished is not admitted a second time. Only
 rows with `final = TRUE` belong in the analysis; the sheet `trials` contains the finished sessions only. The column `final` holds the text TRUE or FALSE. An optional comment that begins with `=`, `+`, `-` or `@` is stored with one leading space, so that no sheet can read it as a formula.
 If the final save fails, the finished record stays in the browser, is offered as a download and is sent again
 at the next visit.
@@ -132,6 +149,14 @@ study page should be cleared with the supervisor; `SHOW_LOGO: false` in `config.
   step 7 above is the real test.
 - Time away from the page is measured with the browser's visibility and focus events. A headless browser reports
   almost no away time; the measurement has to be tried once in a normal browser window before data collection.
+- The Back button or gesture closes an open source and stays on the study page (the reader uses one history entry).
+- The page works on phones (window width from 300 px) and the sources open in a full-screen reader. The device class
+  is therefore a covariate and a sensitivity factor (`analysis.R`, class taken from the `device` event: desktop, phone, tablet). On phones the page is often moved to the
+  background for reasons other than looking something up (notifications, app switching, in-app browsers), so away
+  time and the time after a link click are less reliable there than on a desktop. The clicks on the sources and the
+  decisions are logged identically on all devices. The layout was checked with an emulated phone browser at widths from
+  320 to 1280 px; it still has to be tried on real devices (iOS Safari, Android Chrome, an in-app browser opened
+  from a messenger) in the pilot.
 
 ## Before collecting data
 
